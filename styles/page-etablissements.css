@@ -1,0 +1,708 @@
+/* ===== PAGE ÉTABLISSEMENTS MODERNE ===== */
+
+/* Variables spécifiques */
+:root {
+  --establishments-card-radius: 1.25rem;
+  --establishments-card-padding: 1.5rem;
+  --establishments-header-height: 0.5rem;
+  --establishments-grid-gap: 1.5rem;
+  --establishments-search-height: 3.5rem;
+}
+
+/* Container principal */
+.establishments-container {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 0%,
+    color-mix(in oklch, var(--color-background) 98%, var(--color-primary) 2%) 50%,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 100%
+  );
+  padding: 2rem 0;
+}
+
+.establishments-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 10%, 
+      color-mix(in oklch, var(--color-info), transparent 98%) 0%, 
+      transparent 50%),
+    radial-gradient(circle at 80% 90%, 
+      color-mix(in oklch, var(--color-success), transparent 98%) 0%, 
+      transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: establishments-float 20s ease-in-out infinite alternate;
+}
+
+@keyframes establishments-float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-30px, 20px) scale(1.02);
+  }
+}
+
+/* En-tête de page */
+.establishments-header {
+  margin-bottom: 2.5rem;
+  animation: slide-in-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.establishments-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg,
+    var(--color-foreground) 0%,
+    color-mix(in oklch, var(--color-foreground), var(--color-info) 40%) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  display: inline-block;
+}
+
+.establishments-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-info), var(--color-success));
+  border-radius: 2px;
+  animation: underline-slide 0.8s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+@keyframes underline-slide {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.establishments-count {
+  font-size: 1.125rem;
+  color: var(--color-muted-foreground);
+  opacity: 0.9;
+  animation: fade-in-delayed 0.8s 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes fade-in-delayed {
+  to {
+    opacity: 0.9;
+  }
+}
+
+/* Bouton d'action principal */
+.establishments-primary-button {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: 0.875rem 1.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: linear-gradient(135deg, var(--color-info), var(--color-success));
+  color: white;
+  box-shadow: 
+    0 8px 24px color-mix(in oklch, var(--color-info) 40%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.establishments-primary-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.establishments-primary-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 12px 32px color-mix(in oklch, var(--color-info) 50%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.establishments-primary-button:hover::before {
+  opacity: 1;
+}
+
+.establishments-primary-button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Barre de recherche */
+.establishments-search {
+  position: relative;
+  margin-bottom: 2rem;
+  animation: search-slide 0.6s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes search-slide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.establishments-search-input {
+  width: 100%;
+  height: var(--establishments-search-height);
+  padding: 0 1rem 0 3rem;
+  border-radius: var(--radius-xl);
+  border: 2px solid color-mix(in oklch, var(--color-border) 50%, transparent);
+  background: var(--gradient-surface);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  color: var(--color-foreground);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.establishments-search-input::placeholder {
+  color: color-mix(in oklch, var(--color-muted-foreground) 60%, transparent);
+}
+
+.establishments-search-input:hover {
+  border-color: color-mix(in oklch, var(--color-border) 30%, transparent);
+}
+
+.establishments-search-input:focus {
+  outline: none;
+  border-color: var(--color-info);
+  box-shadow: 0 0 0 4px color-mix(in oklch, var(--color-info) 20%, transparent);
+}
+
+.establishments-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--color-muted-foreground);
+  transition: color 0.3s ease;
+  pointer-events: none;
+}
+
+.establishments-search-input:focus + .establishments-search-icon {
+  color: var(--color-info);
+}
+
+/* Grille d'établissements */
+.establishments-grid {
+  display: grid;
+  gap: var(--establishments-grid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  animation: grid-appear 0.6s 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes grid-appear {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Carte d'établissement */
+.establishment-card {
+  background: var(--gradient-surface);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-radius: var(--establishments-card-radius);
+  border: 1px solid color-mix(in oklch, var(--color-border) 40%, transparent);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  animation: card-enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.establishment-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.establishment-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-info);
+}
+
+.establishment-card:hover::before {
+  opacity: 1;
+}
+
+/* Header coloré de la carte */
+.establishment-card-header {
+  height: var(--establishments-header-height);
+  position: relative;
+  overflow: hidden;
+}
+
+.establishment-card-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.establishment-card:hover .establishment-card-header::after {
+  transform: translateX(100%);
+}
+
+/* Contenu de la carte */
+.establishment-card-content {
+  padding: var(--establishments-card-padding);
+}
+
+/* Logo et informations */
+.establishment-logo-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.establishment-logo {
+  position: relative;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.establishment-card:hover .establishment-logo {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.establishment-logo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0.1;
+}
+
+.establishment-logo svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: currentColor;
+  position: relative;
+  z-index: 1;
+}
+
+.establishment-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.establishment-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.establishment-address {
+  font-size: 0.875rem;
+  color: var(--color-muted-foreground);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Métriques */
+.establishment-metrics {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid color-mix(in oklch, var(--color-border) 40%, transparent);
+}
+
+.establishment-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-muted-foreground);
+  font-size: 0.875rem;
+  transition: color 0.3s ease;
+}
+
+.establishment-card:hover .establishment-metric {
+  color: var(--color-foreground);
+}
+
+.establishment-metric svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.8;
+}
+
+.establishment-metric-value {
+  font-weight: 600;
+}
+
+/* Actions */
+.establishment-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.establishment-action-button {
+  flex: 1;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid color-mix(in oklch, var(--color-border) 60%, transparent);
+  background: transparent;
+  color: var(--color-foreground);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  position: relative;
+  z-index: 10;
+}
+
+.establishment-action-button:hover {
+  border-color: var(--color-info);
+  color: var(--color-info);
+  background: color-mix(in oklch, var(--color-info) 5%, transparent);
+  transform: translateY(-2px);
+}
+
+.establishment-action-button.details {
+  background: var(--color-info);
+  color: white;
+  border-color: var(--color-info);
+}
+
+.establishment-action-button.details:hover {
+  background: color-mix(in oklch, var(--color-info) 90%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px color-mix(in oklch, var(--color-info) 30%, transparent);
+}
+
+.establishment-action-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+  border: 2px solid color-mix(in oklch, var(--color-border) 60%, transparent);
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.establishment-action-icon:hover {
+  transform: translateY(-2px);
+}
+
+.establishment-action-icon.edit:hover {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  background: color-mix(in oklch, var(--color-warning) 5%, transparent);
+}
+
+.establishment-action-icon.delete:hover {
+  border-color: var(--color-destructive);
+  color: white;
+  background: var(--color-destructive);
+  box-shadow: 0 4px 16px color-mix(in oklch, var(--color-destructive) 30%, transparent);
+}
+
+.establishment-action-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* État vide */
+.establishments-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fade-in-scale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.establishments-empty-icon {
+  width: 6rem;
+  height: 6rem;
+  margin: 0 auto 2rem;
+  color: var(--color-muted-foreground);
+  opacity: 0.5;
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+  66% {
+    transform: translateY(-5px) rotate(-2deg);
+  }
+}
+
+.establishments-empty-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin-bottom: 0.75rem;
+}
+
+.establishments-empty-description {
+  font-size: 1.125rem;
+  color: var(--color-muted-foreground);
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.establishments-empty-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--color-info), var(--color-success));
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 
+    0 8px 24px color-mix(in oklch, var(--color-info) 40%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.establishments-empty-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 12px 32px color-mix(in oklch, var(--color-info) 50%, transparent),
+    0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.establishments-empty-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: transform 0.3s ease;
+}
+
+.establishments-empty-button:hover svg {
+  transform: rotate(90deg);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .establishments-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .establishments-container {
+    padding: 1.5rem 0;
+  }
+  
+  .establishments-header {
+    margin-bottom: 2rem;
+  }
+  
+  .establishments-title {
+    font-size: 2rem;
+  }
+  
+  .establishments-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .establishment-card-content {
+    padding: 1.25rem;
+  }
+  
+  .establishment-actions {
+    flex-direction: column;
+  }
+  
+  .establishment-action-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .establishments-title {
+    font-size: 1.75rem;
+  }
+  
+  .establishment-logo-section {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .establishment-metrics {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .establishment-action-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+/* Mode sombre */
+.dark .establishments-container {
+  background: linear-gradient(135deg,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 0%,
+    color-mix(in oklch, var(--color-background) 98%, var(--color-info) 2%) 50%,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 100%
+  );
+}
+
+.dark .establishment-card {
+  background: color-mix(in oklch, var(--color-card) 80%, transparent);
+  border-color: color-mix(in oklch, var(--color-border) 30%, transparent);
+}
+
+.dark .establishments-search-input {
+  background: color-mix(in oklch, var(--color-card) 80%, transparent);
+  border-color: color-mix(in oklch, var(--color-border) 30%, transparent);
+}
+
+/* Animations des cartes avec délai */
+.establishment-card:nth-child(1) { animation-delay: 0.1s; }
+.establishment-card:nth-child(2) { animation-delay: 0.2s; }
+.establishment-card:nth-child(3) { animation-delay: 0.3s; }
+.establishment-card:nth-child(4) { animation-delay: 0.4s; }
+.establishment-card:nth-child(5) { animation-delay: 0.5s; }
+.establishment-card:nth-child(6) { animation-delay: 0.6s; }
+.establishment-card:nth-child(7) { animation-delay: 0.7s; }
+.establishment-card:nth-child(8) { animation-delay: 0.8s; }
+
+/* Overlay de chargement */
+.establishment-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.establishment-loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  animation: loading-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Transition entre états */
+.establishment-card {
+  will-change: transform, box-shadow, border-color;
+}

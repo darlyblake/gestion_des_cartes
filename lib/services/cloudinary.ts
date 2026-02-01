@@ -1,0 +1,86 @@
+/**
+ * Service Cloudinary
+ * Gère les uploads d'images vers Cloudinary
+ */
+
+import { v2 as cloudinary } from 'cloudinary'
+
+/**
+ * Configure Cloudinary avec les variables d'environnement
+ */
+function configureCloudinary() {
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error(
+      'Les variables d\'environnement Cloudinary ne sont pas configurées'
+    )
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  })
+
+  console.log('✓ Cloudinary configuré')
+}
+
+/**
+ * Upload une image vers Cloudinary
+ * @param buffer - Buffer du fichier
+ * @param filename - Nom du fichier
+ * @param folder - Dossier Cloudinary où stocker l'image
+ */
+async function uploadImage(
+  buffer: Buffer,
+  filename: string,
+  folder: string = 'school-card'
+): Promise<string> {
+  try {
+    configureCloudinary()
+
+    // Créer un stream depuis le buffer
+    const result = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          public_id: filename.split('.')[0],
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) reject(error)
+          else resolve(result)
+        }
+      )
+
+      stream.end(buffer)
+    })
+
+    console.log('✓ Image uploadée sur Cloudinary:', result.secure_url)
+    return result.secure_url
+  } catch (error) {
+    console.error('✗ Erreur lors de l\'upload Cloudinary:', error)
+    throw error
+  }
+}
+
+/**
+ * Supprime une image de Cloudinary
+ * @param publicId - ID public de l'image dans Cloudinary
+ */
+async function deleteImage(publicId: string): Promise<void> {
+  try {
+    configureCloudinary()
+
+    await cloudinary.uploader.destroy(publicId)
+    console.log('✓ Image supprimée de Cloudinary:', publicId)
+  } catch (error) {
+    console.error('✗ Erreur lors de la suppression Cloudinary:', error)
+    throw error
+  }
+}
+
+export { uploadImage, deleteImage, configureCloudinary }

@@ -1,0 +1,162 @@
+/* Modifier un membre du personnel (app/personnel/[id]/modifier/page.tsx) */
+
+.page-personnel-modifier {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, var(--color-background), var(--color-muted) 20%);
+}
+
+.personnel-modifier-container {
+  padding: 2rem;
+}
+
+.personnel-modifier-header {
+  margin-bottom: 2rem;
+}
+
+.personnel-modifier-title {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.personnel-modifier-description {
+  color: var(--color-muted-foreground);
+  font-size: 1rem;
+}
+
+.personnel-modifier-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 900px;
+}
+
+.personnel-modifier-section {
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  padding: 1.5rem;
+}
+
+.personnel-modifier-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.personnel-modifier-section-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-primary);
+}
+
+.personnel-modifier-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.personnel-modifier-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.personnel-modifier-form-label {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.personnel-modifier-form-input {
+  width: 100%;
+}
+
+.personnel-modifier-form-textarea {
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.personnel-modifier-photo-upload {
+  border-radius: 0.75rem;
+  border: 2px dashed var(--color-border);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 300ms ease;
+  background: hsl(var(--color-muted) / 0.3);
+}
+
+.personnel-modifier-photo-upload:hover {
+  border-color: var(--color-primary);
+  background: color-mix(in oklch, var(--color-primary) 5%, transparent);
+}
+
+.personnel-modifier-photo-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 1rem auto;
+  border: 1px solid var(--color-border);
+  background: var(--color-muted);
+}
+
+.personnel-modifier-alert {
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--color-destructive) / 0.3);
+  background: hsl(var(--color-destructive) / 0.05);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-destructive);
+}
+
+.personnel-modifier-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.personnel-modifier-actions-left {
+  display: flex;
+  gap: 1rem;
+}
+
+.personnel-modifier-actions-right {
+  display: flex;
+  gap: 1rem;
+}
+
+.personnel-modifier-actions-button {
+  min-width: 120px;
+}
+
+.personnel-modifier-danger-button {
+  background: hsl(var(--color-destructive) / 0.1);
+  color: var(--color-destructive);
+  border: 1px solid hsl(var(--color-destructive) / 0.3);
+}
+
+.personnel-modifier-danger-button:hover {
+  background: var(--color-destructive);
+  color: var(--color-destructive-foreground);
+}
+
+@media (max-width: 768px) {
+  .personnel-modifier-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .personnel-modifier-actions {
+    flex-direction: column-reverse;
+  }
+
+  .personnel-modifier-actions-button {
+    width: 100%;
+  }
+}

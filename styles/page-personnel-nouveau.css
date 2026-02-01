@@ -1,0 +1,421 @@
+/* ===== PAGE NOUVEAU PERSONNEL ===== */
+
+/* Variables spécifiques */
+:root {
+  --personnel-nouveau-gradient-start: #667eea;
+  --personnel-nouveau-gradient-end: #764ba2;
+  --personnel-nouveau-card-radius: 1.5rem;
+  --personnel-nouveau-shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --personnel-nouveau-shadow-md: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --personnel-nouveau-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+  --personnel-nouveau-border-subtle: rgba(0, 0, 0, 0.06);
+}
+
+/* Layout principal */
+.container {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, 
+    color-mix(in oklch, var(--color-background) 98%, var(--personnel-nouveau-gradient-start)) 0%,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 100%
+  );
+  padding: 2rem 1rem;
+}
+
+.container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 20% 10%, 
+      color-mix(in oklch, var(--personnel-nouveau-gradient-start), transparent 97%) 0%, 
+      transparent 40%),
+    radial-gradient(circle at 80% 90%, 
+      color-mix(in oklch, var(--personnel-nouveau-gradient-end), transparent 97%) 0%, 
+      transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* En-tête de page */
+.container > div:first-child {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 3rem;
+  animation: slideInDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+h1.text-2xl {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-foreground) 0%,
+    color-mix(in oklch, var(--color-foreground), var(--personnel-nouveau-gradient-start) 50%) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  display: inline-block;
+}
+
+h1.text-2xl::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--personnel-nouveau-gradient-start),
+    var(--personnel-nouveau-gradient-end)
+  );
+  border-radius: 2px;
+}
+
+p.text-muted-foreground {
+  font-size: 1.125rem;
+  color: var(--color-muted-foreground);
+  max-width: 600px;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin-top: 0.5rem;
+}
+
+/* Formulaire container */
+.max-w-2xl {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  animation: slideInUp 0.6s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  opacity: 0;
+}
+
+/* Animation du formulaire */
+.FormulaireMembre {
+  animation: fadeInUp 0.8s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Animations */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state */
+.ChargementPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  position: relative;
+}
+
+.ChargementPage::before {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--personnel-nouveau-border-subtle);
+  border-top-color: var(--personnel-nouveau-gradient-start);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Card styling pour le formulaire */
+.FormulaireMembre > div {
+  background: color-mix(in oklch, var(--color-card) 95%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--personnel-nouveau-border-subtle);
+  border-radius: var(--personnel-nouveau-card-radius);
+  padding: 2.5rem;
+  box-shadow: var(--personnel-nouveau-shadow-lg);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.FormulaireMembre > div:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--personnel-nouveau-shadow-lg), 0 0 40px rgba(var(--personnel-nouveau-gradient-start-rgb, 102, 126, 234), 0.1);
+}
+
+/* Titres du formulaire */
+.FormulaireMembre h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-foreground);
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.FormulaireMembre h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--personnel-nouveau-gradient-start), var(--personnel-nouveau-gradient-end));
+  border-radius: 2px;
+}
+
+/* Labels du formulaire */
+.FormulaireMembre label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Champs de formulaire */
+.FormulaireMembre input,
+.FormulaireMembre select,
+.FormulaireMembre textarea {
+  background: color-mix(in oklch, var(--color-background) 98%, transparent);
+  border: 1px solid color-mix(in oklch, var(--color-border) 40%, transparent);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.9375rem;
+  color: var(--color-foreground);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100%;
+}
+
+.FormulaireMembre input:focus,
+.FormulaireMembre select:focus,
+.FormulaireMembre textarea:focus {
+  outline: none;
+  border-color: var(--personnel-nouveau-gradient-start);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--personnel-nouveau-gradient-start) 20%, transparent);
+  background: color-mix(in oklch, var(--color-background) 100%, transparent);
+}
+
+/* Boutons du formulaire */
+.FormulaireMembre button {
+  border-radius: 0.75rem;
+  font-weight: 600;
+  padding: 0.875rem 1.75rem;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.FormulaireMembre button[type="submit"] {
+  background: linear-gradient(135deg, var(--personnel-nouveau-gradient-start), var(--personnel-nouveau-gradient-end));
+  color: white;
+  border: none;
+  box-shadow: var(--personnel-nouveau-shadow-sm);
+}
+
+.FormulaireMembre button[type="submit"]:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--personnel-nouveau-shadow-md);
+}
+
+.FormulaireMembre button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.FormulaireMembre button[type="button"] {
+  background: transparent;
+  border: 1px solid color-mix(in oklch, var(--color-border) 50%, transparent);
+  color: var(--color-foreground);
+}
+
+.FormulaireMembre button[type="button"]:hover {
+  border-color: var(--personnel-nouveau-gradient-start);
+  color: var(--personnel-nouveau-gradient-start);
+  background: color-mix(in oklch, var(--personnel-nouveau-gradient-start) 5%, transparent);
+}
+
+/* Photo upload section */
+.FormulaireMembre .photo-upload {
+  border: 2px dashed color-mix(in oklch, var(--color-border) 40%, transparent);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  background: color-mix(in oklch, var(--color-background) 95%, transparent);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.FormulaireMembre .photo-upload:hover {
+  border-color: var(--personnel-nouveau-gradient-start);
+  background: color-mix(in oklch, var(--personnel-nouveau-gradient-start) 2%, transparent);
+  transform: translateY(-2px);
+}
+
+.FormulaireMembre .photo-upload svg {
+  color: var(--personnel-nouveau-gradient-start);
+  opacity: 0.7;
+}
+
+/* Error states */
+.FormulaireMembre .error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-2px); }
+  40%, 60% { transform: translateX(2px); }
+}
+
+/* Success message */
+.FormulaireMembre .success-message {
+  color: #10b981;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Grid layout pour les champs */
+@media (min-width: 768px) {
+  .FormulaireMembre .grid-cols-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+  
+  h1.text-2xl {
+    font-size: 2rem;
+  }
+  
+  p.text-muted-foreground {
+    font-size: 1rem;
+  }
+  
+  .max-w-2xl {
+    max-width: 100%;
+  }
+  
+  .FormulaireMembre > div {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 1rem 0.75rem;
+  }
+  
+  h1.text-2xl {
+    font-size: 1.75rem;
+  }
+  
+  .FormulaireMembre > div {
+    padding: 1.25rem;
+  }
+}
+
+/* Mode sombre */
+.dark .container {
+  background: linear-gradient(135deg, 
+    color-mix(in oklch, var(--color-background) 96%, black) 0%,
+    color-mix(in oklch, var(--color-background) 100%, transparent) 100%
+  );
+}
+
+.dark .FormulaireMembre > div {
+  background: color-mix(in oklch, var(--color-card) 85%, transparent);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark .FormulaireMembre input,
+.dark .FormulaireMembre select,
+.dark .FormulaireMembre textarea {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .FormulaireMembre input:focus,
+.dark .FormulaireMembre select:focus,
+.dark .FormulaireMembre textarea:focus {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Loading animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Decorative elements */
+.container::after {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--personnel-nouveau-gradient-start),
+    var(--personnel-nouveau-gradient-end),
+    var(--personnel-nouveau-gradient-start)
+  );
+  background-size: 200% 100%;
+  animation: gradient-slide 3s linear infinite;
+  z-index: 0;
+}
+
+@keyframes gradient-slide {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
