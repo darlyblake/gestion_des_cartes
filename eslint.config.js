@@ -22,7 +22,6 @@ export default [
       globals: {
         React: 'readonly',
         JSX: 'readonly',
-        // Browser APIs
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
@@ -41,14 +40,18 @@ export default [
         HTMLDivElement: 'readonly',
         KeyboardEvent: 'readonly',
         RequestInit: 'readonly',
-        // Node/Process
         process: 'readonly',
         Buffer: 'readonly',
       }
     },
+    settings: {
+      react: {
+        version: 'detect'
+      }
+    },
     plugins: {
       '@typescript-eslint': typescript,
-      'react': react,
+      react,
       '@next/next': nextPlugin
     },
     rules: {
@@ -56,20 +59,23 @@ export default [
       ...typescript.configs.recommended.rules,
       ...react.configs.recommended.rules,
       ...nextPlugin.configs.recommended.rules,
+
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-debugger': 'error',
       'no-var': 'error',
+
       'react/jsx-key': 'error',
       'react/no-unescaped-entities': 'warn',
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@next/next/no-html-link-for-pages': 'error',
+
       '@next/next/no-img-element': 'warn',
+
       'no-undef': 'off'
     }
   }
 ]
-
