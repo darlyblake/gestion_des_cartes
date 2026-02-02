@@ -25,7 +25,7 @@ function configureCloudinary() {
     api_secret: apiSecret,
   })
 
-  console.log('✓ Cloudinary configuré')
+  console.warn('✓ Cloudinary configuré')
 }
 
 /**
@@ -59,7 +59,7 @@ async function uploadImage(
       stream.end(buffer)
     })
 
-    console.log('✓ Image uploadée sur Cloudinary:', result.secure_url)
+    console.warn('✓ Image uploadée sur Cloudinary:', result.secure_url)
     return result.secure_url
   } catch (error) {
     console.error('✗ Erreur lors de l\'upload Cloudinary:', error)
@@ -76,7 +76,7 @@ async function deleteImage(publicId: string): Promise<void> {
     configureCloudinary()
 
     await cloudinary.uploader.destroy(publicId)
-    console.log('✓ Image supprimée de Cloudinary:', publicId)
+    console.warn('✓ Image supprimée de Cloudinary:', publicId)
   } catch (error) {
     console.error('✗ Erreur lors de la suppression Cloudinary:', error)
     throw error

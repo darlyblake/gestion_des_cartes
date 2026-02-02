@@ -179,7 +179,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
+        {payload.map((item: any, index) => {
           const key = `${nameKey || item.name || item.dataKey || 'value'}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
           const indicatorColor = color || item.payload?.fill || item.color
@@ -281,7 +281,7 @@ function ChartLegendContent({
 
         return (
           <div
-            key={item.dataKey || item.name || item.value || idx}
+            key={(item as any).dataKey || (item as any).name || (item as any).value || idx}
             className={
               '[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3'
             }

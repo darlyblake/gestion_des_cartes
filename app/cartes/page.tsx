@@ -259,6 +259,69 @@ function ContenuPageCartes() {
         scale: 3,
         useCORS: true,
         backgroundColor: '#ffffff',
+        onclone: (doc) => {
+          try {
+            const win = (doc.defaultView || window) as Window
+            const root = doc.querySelector('.carte-scolaire') || doc.body
+            const elements = root.querySelectorAll('*')
+
+            const propsToCheck = [
+              'background-color',
+              'background',
+              'color',
+              'border-color',
+              'box-shadow',
+              'outline-color',
+              'fill',
+              'stroke',
+            ]
+
+            elements.forEach((el) => {
+              const cs = win.getComputedStyle(el as Element)
+              if (!cs) return
+
+              for (const prop of propsToCheck) {
+                try {
+                  const val = cs.getPropertyValue(prop)
+                  if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
+                    // override with safe fallbacks
+                    if (prop.includes('background')) {
+                      ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
+                    } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
+                      ;(el as HTMLElement).style.setProperty('color', '#121318')
+                    } else if (prop.includes('border') || prop === 'outline-color') {
+                      ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
+                    } else if (prop === 'box-shadow') {
+                      ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                    }
+                  }
+                } catch (inner) {
+                  // ignore inaccessible properties
+                }
+              }
+            })
+
+            // Add a fallback stylesheet to override any remaining lab() usages
+            try {
+              const style = doc.createElement('style')
+              style.textContent = `
+                .carte-scolaire, .carte-scolaire * {
+                  background-color: #ffffff !important;
+                  color: #121318 !important;
+                  border-color: #e5e7eb !important;
+                  box-shadow: none !important;
+                }
+              `
+              ;(doc.head || doc.body).appendChild(style)
+            } catch (inner) {
+              // ignore
+            }
+          } catch (e) {
+            // Ne pas bloquer le rendu si l'opération échoue
+            // eslint-disable-next-line no-console
+            console.warn('onclone color sanitize failed', e)
+          }
+        },
       })
 
       const lien = document.createElement('a')
@@ -321,6 +384,68 @@ function ContenuPageCartes() {
           scale: 3,
           useCORS: true,
           backgroundColor: '#ffffff',
+          onclone: (doc) => {
+            try {
+              const win = (doc.defaultView || window) as Window
+              const root = doc.querySelector('.carte-scolaire') || doc.body
+              const elements = root.querySelectorAll('*')
+
+              const propsToCheck = [
+                'background-color',
+                'background',
+                'color',
+                'border-color',
+                'box-shadow',
+                'outline-color',
+                'fill',
+                'stroke',
+              ]
+
+              elements.forEach((el) => {
+                const cs = win.getComputedStyle(el as Element)
+                if (!cs) return
+
+                for (const prop of propsToCheck) {
+                  try {
+                    const val = cs.getPropertyValue(prop)
+                    if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
+                      // override with safe fallbacks
+                      if (prop.includes('background')) {
+                        ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
+                      } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
+                        ;(el as HTMLElement).style.setProperty('color', '#121318')
+                      } else if (prop.includes('border') || prop === 'outline-color') {
+                        ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
+                      } else if (prop === 'box-shadow') {
+                        ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                      }
+                    }
+                  } catch (inner) {
+                    // ignore inaccessible properties
+                  }
+                }
+              })
+
+              // Add a fallback stylesheet to override any remaining lab() usages
+              try {
+                const style = doc.createElement('style')
+                style.textContent = `
+                  .carte-scolaire, .carte-scolaire * {
+                    background-color: #ffffff !important;
+                    color: #121318 !important;
+                    border-color: #e5e7eb !important;
+                    box-shadow: none !important;
+                  }
+                `
+                ;(doc.head || doc.body).appendChild(style)
+              } catch (inner) {
+                // ignore
+              }
+            } catch (e) {
+              // eslint-disable-next-line no-console
+              console.warn('onclone color sanitize failed', e)
+            }
+          },
         })
 
         // Ajouter l'image au PDF

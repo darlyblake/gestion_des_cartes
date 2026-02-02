@@ -1,0 +1,811 @@
+/**
+ * Styles modernes pour le formulaire de création/modification de personnel
+ * Design épuré avec micro-interactions
+ */
+
+@layer components {
+  /* ===== CONTAINER PRINCIPAL ===== */
+  .FormulaireMembre {
+    --form-spacing: var(--space-8);
+    --form-max-width: 100%;
+    --form-animation: fadeInSlideUp 0.5s var(--ease-smooth);
+    
+    display: flex;
+    flex-direction: column;
+    gap: var(--form-spacing);
+    max-width: var(--form-max-width);
+    animation: var(--form-animation);
+  }
+
+  /* ===== CARTES AMÉLIORÉES ===== */
+  .FormulaireMembre .card {
+    --card-bg: var(--color-surface-elevated);
+    --card-border: 1px solid var(--color-border);
+    --card-radius: var(--radius-2xl);
+    --card-shadow: var(--shadow-lg);
+    --card-transition: all var(--duration-base) var(--ease-soft);
+    --card-overflow: hidden;
+    
+    background: var(--card-bg);
+    border: var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    transition: var(--card-transition);
+    overflow: var(--card-overflow);
+    position: relative;
+  }
+
+  .FormulaireMembre .card:hover {
+    --card-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+  }
+
+  .FormulaireMembre .card:focus-within {
+    --card-border: 1px solid var(--color-primary-300);
+    --card-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary-500), transparent 85%);
+  }
+
+  /* En-tête des cartes */
+  .FormulaireMembre .card-header {
+    --header-bg: linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--color-primary-50), transparent 90%) 0%,
+      color-mix(in oklch, var(--color-primary-100), transparent 95%) 100%
+    );
+    --header-padding: var(--space-6) var(--space-6) var(--space-4);
+    --header-border: 0 0 1px 0;
+    --header-border-color: var(--color-separator);
+    
+    background: var(--header-bg);
+    padding: var(--header-padding);
+    border-bottom: var(--header-border) solid var(--header-border-color);
+  }
+
+  /* Titre des cartes */
+  .FormulaireMembre .card-title {
+    --title-font-size: var(--text-xl);
+    --title-font-weight: var(--font-weight-semibold);
+    --title-color: var(--color-text-primary);
+    --title-display: flex;
+    --title-align: center;
+    --title-gap: var(--space-2);
+    
+    font-size: var(--title-font-size);
+    font-weight: var(--title-font-weight);
+    color: var(--title-color);
+    display: var(--title-display);
+    align-items: var(--title-align);
+    gap: var(--title-gap);
+    margin-bottom: 0;
+  }
+
+  .FormulaireMembre .card-title::before {
+    content: '';
+    width: 4px;
+    height: 1.5em;
+    background: linear-gradient(
+      to bottom,
+      var(--color-primary-500),
+      var(--color-primary-300)
+    );
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  /* Contenu des cartes */
+  .FormulaireMembre .card-content {
+    --content-padding: var(--space-6);
+    --content-gap: var(--space-6);
+    
+    padding: var(--content-padding);
+    display: flex;
+    flex-direction: column;
+    gap: var(--content-gap);
+  }
+
+  /* ===== SECTION PHOTO AVANCÉE ===== */
+  .photo-upload-section {
+    --section-gap: var(--space-6);
+    --preview-size: 9rem;
+    --preview-radius: var(--radius-xl);
+    --preview-border: 2px solid var(--color-border);
+    --preview-hover-border: 2px solid var(--color-primary-500);
+    
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  /* Conteneur photo */
+  .photo-container {
+    display: flex;
+    gap: var(--space-6);
+    align-items: flex-start;
+  }
+
+  @media (max-width: 48rem) {
+    .photo-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  /* Prévisualisation photo */
+  .photo-preview-wrapper {
+    position: relative;
+    width: var(--preview-size);
+    height: var(--preview-size);
+    flex-shrink: 0;
+  }
+
+  .photo-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--preview-radius);
+    border: var(--preview-border);
+    object-fit: cover;
+    transition: all var(--duration-base) var(--ease-soft);
+  }
+
+  .photo-preview-wrapper:hover .photo-preview {
+    border: var(--preview-hover-border);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Badge de statut photo */
+  .photo-status-badge {
+    position: absolute;
+    bottom: -var(--space-2);
+    right: -var(--space-2);
+    background: var(--gradient-primary);
+    color: var(--color-primary-foreground);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+  }
+
+  .photo-status-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  /* Contrôles photo */
+  .photo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .photo-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+  }
+
+  /* Boutons photo spéciaux */
+  .photo-button {
+    --btn-height: var(--space-11);
+    --btn-radius: var(--radius-lg);
+    --btn-border: 1px solid var(--color-border);
+    --btn-bg: var(--color-surface);
+    --btn-color: var(--color-text-primary);
+    --btn-transition: all var(--duration-fast) var(--ease-out);
+    
+    height: var(--btn-height);
+    border-radius: var(--btn-radius);
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    transition: var(--btn-transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .photo-button:hover {
+    --btn-border: 1px solid var(--color-primary-300);
+    --btn-bg: color-mix(in oklch, var(--color-primary-50), transparent 80%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .photo-button:active {
+    transform: translateY(0);
+  }
+
+  .photo-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Bouton caméra désactivé */
+  .camera-disabled {
+    position: relative;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .camera-disabled::after {
+    content: 'HTTPS requis';
+    position: absolute;
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-warning-500);
+    color: var(--color-warning-foreground);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+    pointer-events: none;
+  }
+
+  .camera-disabled:hover::after {
+    opacity: 1;
+  }
+
+  /* Caméra active */
+  .camera-active {
+    --camera-bg: var(--color-gray-950);
+    --camera-radius: var(--radius-lg);
+    --camera-border: 2px solid var(--color-primary-500);
+    
+    background: var(--camera-bg);
+    border-radius: var(--camera-radius);
+    border: var(--camera-border);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .camera-view {
+    width: 100%;
+    height: 20rem;
+    object-fit: cover;
+    display: block;
+  }
+
+  .camera-controls {
+    position: absolute;
+    bottom: var(--space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--space-3);
+    z-index: 10;
+  }
+
+  .capture-button {
+    --btn-size: 4rem;
+    --btn-bg: var(--color-surface);
+    --btn-border: 2px solid var(--color-primary-500);
+    
+    width: var(--btn-size);
+    height: var(--btn-size);
+    border-radius: 50%;
+    background: var(--btn-bg);
+    border: var(--btn-border);
+    position: relative;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+
+  .capture-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px color-mix(in oklch, var(--color-primary-500), transparent 85%);
+  }
+
+  .capture-button::before {
+    content: '';
+    position: absolute;
+    inset: var(--space-2);
+    background: var(--color-primary-500);
+    border-radius: 50%;
+  }
+
+  /* ===== GRID DE FORMULAIRE ===== */
+  .form-grid {
+    --grid-cols: 1;
+    --grid-gap: var(--space-4);
+    --grid-auto-flow: row;
+    
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), 1fr);
+    gap: var(--grid-gap);
+    grid-auto-flow: var(--grid-auto-flow);
+  }
+
+  @media (min-width: 48rem) {
+    .form-grid {
+      --grid-cols: 2;
+    }
+  }
+
+  /* Groupes de champs */
+  .form-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* Labels améliorés */
+  .form-label {
+    --label-font-size: var(--text-sm);
+    --label-font-weight: var(--font-weight-semibold);
+    --label-color: var(--color-text-primary);
+    --label-display: flex;
+    --label-align: center;
+    --label-gap: var(--space-1);
+    
+    font-size: var(--label-font-size);
+    font-weight: var(--label-font-weight);
+    color: var(--label-color);
+    display: var(--label-display);
+    align-items: var(--label-align);
+    gap: var(--label-gap);
+  }
+
+  .form-label-required {
+    --required-color: var(--color-destructive-500);
+    --required-font-size: 0.875em;
+    
+    color: var(--required-color);
+    font-size: var(--required-font-size);
+  }
+
+  /* Inputs modernisés */
+  .form-input {
+    --input-bg: var(--color-surface);
+    --input-border: 1px solid var(--color-border);
+    --input-color: var(--color-text-primary);
+    --input-placeholder: var(--color-text-muted);
+    --input-radius: var(--radius-lg);
+    --input-padding: var(--space-3) var(--space-4);
+    --input-shadow: 0 1px 2px transparent;
+    --input-transition: all var(--duration-fast) var(--ease-out);
+    
+    width: 100%;
+    font-size: var(--text-base);
+    color: var(--input-color);
+    background: var(--input-bg);
+    border: var(--input-border);
+    border-radius: var(--input-radius);
+    padding: var(--input-padding);
+    box-shadow: var(--input-shadow);
+    transition: var(--input-transition);
+  }
+
+  .form-input:focus {
+    --input-border: 1px solid var(--color-primary-500);
+    --input-shadow: var(--shadow-sm);
+    outline: none;
+  }
+
+  .form-input:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .form-input:hover:not(:disabled, :read-only, :focus) {
+    --input-border: 1px solid var(--color-border-strong);
+  }
+
+  .form-input::placeholder {
+    color: var(--input-placeholder);
+    opacity: 1;
+  }
+
+  /* Select amélioré */
+  .form-select-trigger {
+    --select-bg: var(--color-surface);
+    --select-border: 1px solid var(--color-border);
+    --select-color: var(--color-text-primary);
+    --select-radius: var(--radius-lg);
+    --select-padding: var(--space-3) var(--space-4);
+    --select-transition: all var(--duration-fast) var(--ease-out);
+    
+    background: var(--select-bg);
+    border: var(--select-border);
+    color: var(--select-color);
+    border-radius: var(--select-radius);
+    padding: var(--select-padding);
+    transition: var(--select-transition);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+
+  .form-select-trigger:hover {
+    --select-border: 1px solid var(--color-primary-300);
+    --select-bg: color-mix(in oklch, var(--color-primary-50), transparent 90%);
+  }
+
+  .form-select-trigger:focus {
+    --select-border: 1px solid var(--color-primary-500);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-primary-500), transparent 85%);
+    outline: none;
+  }
+
+  /* Message d'information */
+  .form-info-message {
+    --info-bg: color-mix(in oklch, var(--color-info-50), transparent 60%);
+    --info-border: 1px solid var(--color-info-200);
+    --info-color: var(--color-info-700);
+    --info-radius: var(--radius-lg);
+    --info-padding: var(--space-3);
+    
+    background: var(--info-bg);
+    border: var(--info-border);
+    color: var(--info-color);
+    border-radius: var(--info-radius);
+    padding: var(--info-padding);
+    text-align: center;
+    font-size: var(--text-sm);
+  }
+
+  .form-info-message a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .form-info-message a:hover {
+    text-decoration: none;
+  }
+
+  /* ===== ACTIONS DU FORMULAIRE ===== */
+  .form-actions {
+    --actions-padding: var(--space-6) 0 0;
+    --actions-border: 1px solid var(--color-separator);
+    --actions-gap: var(--space-3);
+    --actions-justify: flex-end;
+    
+    display: flex;
+    gap: var(--actions-gap);
+    justify-content: var(--actions-justify);
+    padding: var(--actions-padding);
+    border-top: var(--actions-border);
+  }
+
+  /* Boutons d'action */
+  .action-button {
+    --btn-height: var(--space-11);
+    --btn-padding: var(--space-3) var(--space-6);
+    --btn-radius: var(--radius-lg);
+    --btn-font: var(--font-weight-semibold);
+    --btn-transition: all var(--duration-base) var(--ease-smooth);
+    
+    height: var(--btn-height);
+    padding: var(--btn-padding);
+    border-radius: var(--btn-radius);
+    font-weight: var(--btn-font);
+    transition: var(--btn-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    border: none;
+  }
+
+  .action-button--primary {
+    --btn-bg: var(--gradient-primary);
+    --btn-color: var(--color-primary-foreground);
+    --btn-shadow: var(--shadow-md);
+    
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    box-shadow: var(--btn-shadow);
+  }
+
+  .action-button--primary:hover {
+    --btn-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .action-button--primary:active {
+    transform: translateY(0);
+  }
+
+  .action-button--secondary {
+    --btn-bg: transparent;
+    --btn-color: var(--color-text-secondary);
+    --btn-border: 1px solid var(--color-border);
+    
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    border: var(--btn-border);
+  }
+
+  .action-button--secondary:hover {
+    --btn-bg: var(--color-muted);
+    --btn-border: 1px solid var(--color-border-strong);
+  }
+
+  .action-button--destructive {
+    --btn-bg: var(--color-destructive-500);
+    --btn-color: var(--color-destructive-foreground);
+    --btn-shadow: var(--shadow-md);
+    
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    box-shadow: var(--btn-shadow);
+  }
+
+  .action-button--destructive:hover {
+    --btn-bg: var(--color-destructive-600);
+    --btn-shadow: var(--shadow-lg);
+  }
+
+  .action-button--loading {
+    position: relative;
+    color: transparent;
+  }
+
+  .action-button--loading::after {
+    content: '';
+    position: absolute;
+    width: var(--space-4);
+    height: var(--space-4);
+    border: 2px solid;
+    border-color: currentColor transparent transparent transparent;
+    border-radius: var(--radius-full);
+    animation: var(--animation-spin);
+  }
+
+  /* Bouton large */
+  .action-button--lg {
+    --btn-height: var(--space-12);
+    --btn-padding: var(--space-4) var(--space-8);
+    font-size: var(--text-base);
+  }
+
+  /* ===== MODAL DE SUPPRESSION ===== */
+  .delete-modal {
+    --modal-bg: var(--color-surface-elevated);
+    --modal-radius: var(--radius-2xl);
+    --modal-shadow: var(--shadow-strong);
+    --modal-max-width: 28rem;
+    --modal-padding: var(--space-6);
+    --modal-border: 1px solid var(--color-border);
+    
+    background: var(--modal-bg);
+    border-radius: var(--modal-radius);
+    box-shadow: var(--modal-shadow);
+    max-width: var(--modal-max-width);
+    padding: var(--modal-padding);
+    border: var(--modal-border);
+    margin: 0 var(--space-4);
+  }
+
+  .delete-modal-title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-destructive-600);
+    margin-bottom: var(--space-2);
+  }
+
+  .delete-modal-description {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--space-6);
+  }
+
+  .delete-modal-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeInSlideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* ===== RESPONSIVE DESIGN ===== */
+  @media (max-width: 48rem) {
+    .FormulaireMembre {
+      --form-spacing: var(--space-6);
+    }
+
+    .FormulaireMembre .card-header {
+      --header-padding: var(--space-4) var(--space-4) var(--space-3);
+    }
+
+    .FormulaireMembre .card-content {
+      --content-padding: var(--space-4);
+      --content-gap: var(--space-4);
+    }
+
+    .photo-container {
+      align-items: center;
+      text-align: center;
+    }
+
+    .photo-controls {
+      width: 100%;
+    }
+
+    .photo-actions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      --actions-gap: var(--space-2);
+      flex-direction: column;
+    }
+
+    .action-button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .delete-modal {
+      --modal-padding: var(--space-4);
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .FormulaireMembre .card {
+      --card-radius: var(--radius-xl);
+    }
+
+    .photo-preview-wrapper {
+      --preview-size: 7rem;
+    }
+
+    .form-grid {
+      --grid-gap: var(--space-3);
+    }
+  }
+
+  /* ===== ACCESSIBILITÉ ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .FormulaireMembre,
+    .FormulaireMembre .card,
+    .photo-button,
+    .action-button,
+    .form-input,
+    .form-select-trigger {
+      transition: none;
+      animation: none;
+    }
+
+    .FormulaireMembre .card:hover {
+      transform: none;
+    }
+
+    .action-button:hover {
+      transform: none;
+    }
+  }
+
+  @media (prefers-contrast: high) {
+    .FormulaireMembre .card {
+      --card-border: 2px solid var(--color-text-primary);
+    }
+
+    .form-input,
+    .form-select-trigger {
+      --input-border: 2px solid var(--color-text-primary);
+    }
+
+    .form-input:focus {
+      --input-border: 2px solid var(--color-primary-500);
+      outline: 3px solid var(--color-primary-500);
+    }
+  }
+
+  /* ===== THÈME SOMBRE ===== */
+  .dark .FormulaireMembre .card-header,
+  [data-theme="dark"] .FormulaireMembre .card-header {
+    --header-bg: linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--color-primary-900), transparent 80%) 0%,
+      color-mix(in oklch, var(--color-primary-950), transparent 90%) 100%
+    );
+  }
+
+  .dark .photo-button,
+  [data-theme="dark"] .photo-button {
+    --btn-bg: var(--color-surface);
+  }
+
+  .dark .camera-active,
+  [data-theme="dark"] .camera-active {
+    --camera-bg: var(--color-gray-900);
+  }
+
+  /* ===== ÉTATS DE CHARGEMENT ===== */
+  .loading-state {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loading-state::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--color-surface), transparent 20%) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ===== ICÔNES ANIMÉES ===== */
+  .icon-pulse {
+    animation: pulse 2s infinite;
+  }
+
+  .icon-spin {
+    animation: var(--animation-spin);
+  }
+
+  /* ===== UTILITAIRES ===== */
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass-effect {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(var(--blur-backdrop));
+    -webkit-backdrop-filter: blur(var(--blur-backdrop));
+    border: 1px solid color-mix(in oklch, var(--color-border), transparent 30%);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+}

@@ -32,7 +32,7 @@ async function connectToDatabase(): Promise<{ client: MongoClient; db: Db }> {
     cachedClient = client
     cachedDb = db
 
-    console.log('✓ Connecté à MongoDB Atlas')
+    console.warn('✓ Connecté à MongoDB Atlas')
     return { client, db }
   } catch (error) {
     console.error('✗ Erreur de connexion à MongoDB:', error)
@@ -48,7 +48,7 @@ async function closeDatabase(): Promise<void> {
     await cachedClient.close()
     cachedClient = null
     cachedDb = null
-    console.log('✓ Déconnecté de MongoDB Atlas')
+    console.warn('✓ Déconnecté de MongoDB Atlas')
   }
 }
 

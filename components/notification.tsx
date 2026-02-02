@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 /**
  * Types de notification disponibles
  */
-type TypeNotification = 'succes' | 'erreur' | 'info' | 'success' | 'error'
+type TypeNotification = 'succes' | 'erreur' | 'info' | 'success' | 'error' | string
 
 /**
  * Interface d'une notification
@@ -116,13 +116,23 @@ interface NotificationItemProps {
  */
 function NotificationItem({ notification, onFermer }: NotificationItemProps) {
   // Configuration des styles par type
-  const configurations = {
+  const configurations: Record<string, { icone: any; classes: string; iconeClasses: string }> = {
     succes: {
       icone: CheckCircle,
       classes: 'bg-green-50 border-green-200 text-green-800',
       iconeClasses: 'text-green-500',
     },
+    success: {
+      icone: CheckCircle,
+      classes: 'bg-green-50 border-green-200 text-green-800',
+      iconeClasses: 'text-green-500',
+    },
     erreur: {
+      icone: AlertCircle,
+      classes: 'bg-red-50 border-red-200 text-red-800',
+      iconeClasses: 'text-red-500',
+    },
+    error: {
       icone: AlertCircle,
       classes: 'bg-red-50 border-red-200 text-red-800',
       iconeClasses: 'text-red-500',
@@ -134,7 +144,7 @@ function NotificationItem({ notification, onFermer }: NotificationItemProps) {
     },
   }
 
-  const config = configurations[notification.type]
+  const config = configurations[notification.type] || configurations.info
   const Icone = config?.icone
 
   if (!config || !Icone) {

@@ -145,6 +145,7 @@ nav, [role="navigation"], .navbar, .nav-bar, [class*="entete"], [class*="header-
   box-shadow: var(--eleve-nouveau-shadow-md);
   position: relative;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -287,9 +288,57 @@ nav, [role="navigation"], .navbar, .nav-bar, [class*="entete"], [class*="header-
   box-shadow: var(--eleve-nouveau-shadow-md);
   padding: 32px;
   transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 1;
+}
+
+/* ===== LAYOUT: photo à gauche, formulaire à droite (desktop) ===== */
+.page-eleve-nouveau .formulaire-card .formulaire-content form {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.page-eleve-nouveau .formulaire-card .formulaire-content form .form-section:first-of-type {
+  grid-column: 1;
+}
+
+.page-eleve-nouveau .formulaire-card .formulaire-content form .form-section:not(:first-of-type) {
+  grid-column: 2;
+}
+
+.page-eleve-nouveau .formulaire-card .formulaire-content form .photo-preview {
+  width: 220px;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: block;
+}
+
+.page-eleve-nouveau .formulaire-card .formulaire-content form .photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Les actions (boutons) s'étendent sur les deux colonnes */
+.page-eleve-nouveau .formulaire-card .formulaire-content form > div:last-child {
+  grid-column: 1 / -1;
+}
+
+/* Responsive: empiler sur petits écrans */
+@media (max-width: 768px) {
+  .page-eleve-nouveau .formulaire-card .formulaire-content form {
+    display: block;
+  }
+  .page-eleve-nouveau .formulaire-card .formulaire-content form .photo-preview {
+    width: 100%;
+    height: auto;
+  }
 }
 
 .page-eleve-nouveau form {
@@ -355,6 +404,7 @@ nav, [role="navigation"], .navbar, .nav-bar, [class*="entete"], [class*="header-
 .dark .page-eleve-nouveau form {
   background: rgba(30, 41, 59, 0.85);
   border-color: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
 }
 
@@ -420,7 +470,24 @@ nav, [role="navigation"], .navbar, .nav-bar, [class*="entete"], [class*="header-
 
   .etat-vide,
   .page-eleve-nouveau div[role="region"],
-  .page-eleve-nouveau [class*="CardContent"],
+  .page-eleve-nouveau [class*="CardContent"],  /* Couleur personnalisée */
+  #sexe, #classe {
+    color: #1e3a8a;
+    background-color: #f0f9ff;
+    border-color: #0ea5e9;
+  }
+  
+  /* Avec animation au focus */
+  #sexe:focus, #classe:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  }
+  
+  /* Bordure arrondie plus importante */
+  #sexe, #classe {
+    border-radius: 0.5rem;
+    border-width: 2px;
+  }
   .page-eleve-nouveau form {
     padding: 20px;
   }
@@ -447,4 +514,90 @@ nav, [role="navigation"], .navbar, .nav-bar, [class*="entete"], [class*="header-
     width: 100%;
     padding: 12px 16px;
   }
+}
+
+/* ===== CORRECTIF POUR LES SELECTS (SEXE ET CLASSE) ===== */
+/* Fix pour que le dropdown du Select s'affiche correctement */
+#sexe,
+#classe {
+  position: relative;
+  z-index: 10;
+}
+
+/* Assurer que le contenu du select s'affiche par-dessus les autres éléments */
+[role="listbox"],
+[role="dialog"][role="presentation"] {
+  z-index: 1000 !important;
+  position: relative !important;
+}
+
+/* Pour le composant Select de shadcn/ui */
+.page-eleve-nouveau [class*="Select"],
+.page-eleve-nouveau [class*="Popover"] {
+  z-index: 1000 !important;
+}
+
+/* Assurez-vous que le formulaire a un overflow visible */
+.page-eleve-nouveau form {
+  overflow: visible !important;
+}
+
+/* ===== STYLE DU CONTENU DU SELECT (LISTE DES PROPOSITIONS) ===== */
+/* Conteneur de la liste */
+[role="listbox"] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%) !important;
+  border: 2px solid #e5e7eb !important;
+  border-radius: 0.875rem !important;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  padding: 0.5rem 0 !important;
+  overflow-y: auto !important;
+}
+
+/* Items du select */
+[role="option"] {
+  padding: 0.875rem 1rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  color: #1f2937 !important;
+  font-weight: 500 !important;
+  border-left: 3px solid transparent !important;
+}
+
+/* Hover sur les items */
+[role="option"]:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border-left-color: #047857 !important;
+  padding-left: 1.25rem !important;
+}
+
+/* Item sélectionné */
+[role="option"][aria-selected="true"] {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border-left-color: #047857 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Scrollbar de la liste */
+[role="listbox"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[role="listbox"]::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+[role="listbox"]::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+[role="listbox"]::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

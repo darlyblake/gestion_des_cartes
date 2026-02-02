@@ -212,21 +212,22 @@ export default function PageNouvelleClasse() {
                         </svg>
                       </button>
                       {selectOuvert === 'etablissement' && (
-                        <div className="class-creation-select-content" role="listbox">
+                        <div className="class-creation-select-content" role="listbox" aria-label="Sélectionner un établissement">
                           {etablissements.map((etab, idx) => {
                             const value = etab._id?.toString() || etab.id || etab.nom || `etab-${idx}`
                             return (
-                              <button
+                              <div
                                 key={value}
-                                type="button"
+                                role="option"
                                 className={`class-creation-select-item ${etablissementId === value ? 'is-selected' : ''}`}
                                 onClick={() => {
                                   setEtablissementId(value)
                                   setSelectOuvert(null)
                                 }}
+                                aria-selected={etablissementId === value}
                               >
                                 {etab.nom}
-                              </button>
+                              </div>
                             )
                           })}
                         </div>

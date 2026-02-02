@@ -1,6 +1,6 @@
 /**
  * Route API pour la gestion des classes
- * GET  - Récupère toutes les classes (filtre optionnel par établissement)
+ * GET  - Récupère toutes les classes (filtre optionnel par établissement, CACHÉE)
  * POST - Crée une nouvelle classe
  */
 
@@ -9,6 +9,7 @@ import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { CreerClasseDonnees } from '@/lib/types'
 import { serializeDocument, serializeDocuments, serializeReference } from '@/lib/services/serializers'
+import { apiCache, cacheKeys, invalidateCacheAfterChange } from '@/lib/services/api-cache'
 
 /* =========================
    GET /api/classes
@@ -19,72 +20,79 @@ export async function GET(requete: Request) {
     const etablissementId = searchParams.get('etablissementId')
 
     const classesCollection = await getCollection('classes')
-    const elevesCollection = await getCollection('eleves')
+
+    // Générer la clé de cache appropriée
+    const cacheKey = etablissementId
+      ? cacheKeys.CLASSES_PAR_ETABLISSEMENT(etablissementId)
+      : cacheKeys.TOUTES_LES_CLASSES
 
     const filtre: any = {}
     if (etablissementId) {
       filtre.etablissementId = new ObjectId(etablissementId)
     }
 
-    // Optimisation : utiliser $facet pour compter les élèves en une seule requête
-    const result = await classesCollection
-      .aggregate([
-        { $match: filtre },
-        {
-          $lookup: {
-            from: 'etablissements',
-            localField: 'etablissementId',
-            foreignField: '_id',
-            as: 'etablissement',
-          },
-        },
-        {
-          $unwind: {
-            path: '$etablissement',
-            preserveNullAndEmptyArrays: true,
-          },
-        },
-        {
-          $lookup: {
-            from: 'eleves',
-            localField: '_id',
-            foreignField: 'classeId',
-            as: 'eleves',
-          },
-        },
-        {
-          $addFields: {
-            nombreEleves: { $size: '$eleves' },
-          },
-        },
-        {
-          $project: {
-            eleves: 0, // On ne retourne pas les élèves, juste le compte
-          },
-        },
-      ])
-      .toArray()
+    const donnees = await apiCache.getOrSet(
+      cacheKey,
+      async () => {
+        const result = await classesCollection
+          .aggregate([
+            { $match: filtre },
+            {
+              $lookup: {
+                from: 'etablissements',
+                localField: 'etablissementId',
+                foreignField: '_id',
+                as: 'etablissement',
+              },
+            },
+            {
+              $unwind: {
+                path: '$etablissement',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+            {
+              $lookup: {
+                from: 'eleves',
+                localField: '_id',
+                foreignField: 'classeId',
+                as: 'eleves',
+              },
+            },
+            {
+              $addFields: {
+                nombreEleves: { $size: '$eleves' },
+              },
+            },
+            {
+              $project: {
+                eleves: 0,
+              },
+            },
+          ])
+          .toArray()
 
-    const classes = result
-
-    const classesSerialisees = classes.map((classe) => {
-      const { etablissement, ...rest } = classe
-      return {
-        ...serializeDocument(rest),
-        etablissement: etablissement ? serializeDocument(etablissement) : undefined,
-        etablissementId: serializeReference(rest.etablissementId),
-        nombreEleves: classe.nombreEleves || 0,
-      }
-    })
+        return result.map((classe) => {
+          const { etablissement, ...rest } = classe
+          return {
+            ...serializeDocument(rest),
+            etablissement: etablissement ? serializeDocument(etablissement) : undefined,
+            etablissementId: serializeReference(rest.etablissementId),
+            nombreEleves: classe.nombreEleves || 0,
+          }
+        })
+      },
+      3 * 60 * 1000 // 3 minutes TTL
+    )
 
     return NextResponse.json(
       {
         succes: true,
-        donnees: classesSerialisees,
+        donnees,
       },
       {
         headers: {
-          'Cache-Control': 'public, max-age=300, s-maxage=600', // Cache 5 min client, 10 min CDN
+          'Cache-Control': 'public, max-age=180, s-maxage=360',
         },
       }
     )
@@ -138,6 +146,9 @@ export async function POST(requete: Request) {
     }
 
     const resultat = await classesCollection.insertOne(nouvelleClasse)
+
+    // Invalider les caches affectés
+    invalidateCacheAfterChange('classe')
 
     return NextResponse.json({
       succes: true,

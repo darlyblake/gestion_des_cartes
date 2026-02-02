@@ -33,7 +33,7 @@ export async function ensureIndexes() {
     await etablissementsCollection.createIndex({ nom: 1 })
     await etablissementsCollection.createIndex({ creeLe: -1 })
 
-    console.log('✅ Index MongoDB créés avec succès')
+    console.warn('✅ Index MongoDB créés avec succès')
   } catch (erreur) {
     console.error('❌ Erreur lors de la création des index:', erreur)
   }

@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ Autoriser les requêtes depuis l'IP 192.168.1.72 en développement
+  allowedDevOrigins: ['192.168.1.72', 'localhost', '127.0.0.1'],
+
   // ✅ Vérifier les erreurs TypeScript en build (PRODUCTION MODE)
   typescript: {
     tsconfigPath: './tsconfig.json',

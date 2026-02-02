@@ -2,6 +2,8 @@
  * Composant de chargement pour la page nouvel élève
  * Nécessaire pour useSearchParams
  */
-export default function Loading() {
+import type { ReactNode } from 'react'
+
+export default function Loading(): ReactNode {
   return null
 }

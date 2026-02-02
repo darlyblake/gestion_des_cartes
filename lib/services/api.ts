@@ -59,9 +59,10 @@ async function requeteFetch<T>(
     }
   } catch (erreur) {
     console.error('Erreur API:', erreur)
+    const message = erreur instanceof Error ? erreur.message : String(erreur)
     return {
       succes: false,
-      erreur: 'Erreur de connexion au serveur',
+      erreur: `Erreur de connexion au serveur: ${message}`,
     }
   }
 }

@@ -20,8 +20,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
+import { createPortal } from 'react-dom'
+import { ModalSimple } from '@/components/modal-simple'
 import { ListeVide } from '@/components/liste-vide'
-import { ModalConfirmation } from '@/components/modal-confirmation'
+// ModalConfirmation remplacé par une modal inline pour un contrôle visuel direct
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -46,7 +48,8 @@ import type { Eleve, Classe, Etablissement } from '@/lib/types'
 /**
  * Formate une date en français
  */
-function formaterDate(date: Date | string): string {
+function formaterDate(date?: Date | string | undefined): string {
+  if (!date) return '—'
   const d = new Date(date)
   return d.toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -176,17 +179,24 @@ export default function PageEleves() {
   const gererSuppression = async () => {
     if (!eleveASupprimer) return
 
+    const id = eleveASupprimer.id || eleveASupprimer._id || ''
+    if (!id) {
+      afficherNotification('erreur', 'ID de l\'élève manquant')
+      setEleveASupprimer(null)
+      return
+    }
+
     setEnSuppression(true)
     try {
-      const reponse = await supprimerEleve(eleveASupprimer.id)
+      const reponse = await supprimerEleve(id)
       if (reponse.succes) {
-        setEleves(prev => prev.filter(e => e.id !== eleveASupprimer.id))
+        setEleves(prev => prev.filter(e => (e.id || e._id) !== id))
         afficherNotification('succes', 'Élève supprimé avec succès')
       } else {
         afficherNotification('erreur', reponse.erreur || 'Erreur lors de la suppression')
       }
     } catch (erreur) {
-      console.error('Erreur:', erreur)
+      console.error('❌ Erreur suppression:', erreur)
       afficherNotification('erreur', 'Erreur lors de la suppression')
     } finally {
       setEnSuppression(false)
@@ -411,15 +421,13 @@ export default function PageEleves() {
         )}
       </div>
 
-      {/* Modal de confirmation de suppression */}
-      <ModalConfirmation
+      <ModalSimple
         ouvert={!!eleveASupprimer}
         onFermer={() => setEleveASupprimer(null)}
         onConfirmer={gererSuppression}
         titre="Supprimer l'élève"
         description={`Êtes-vous sûr de vouloir supprimer "${eleveASupprimer?.prenom} ${eleveASupprimer?.nom}" ? Cette action est irréversible.`}
-        texteConfirmation="Supprimer"
-        variante="destructive"
+        confirmText="Supprimer"
         enChargement={enSuppression}
       />
     </div>

@@ -10,7 +10,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { ChargementPage } from '@/components/chargement'
 import { ListeVide } from '@/components/liste-vide'
-import { ModalConfirmation } from '@/components/modal-confirmation'
+import { ModalSimple } from '@/components/modal-simple'
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -52,6 +52,11 @@ export default function PagePersonnel() {
   const [recherche, setRecherche] = useState('')
   const [enChargement, setEnChargement] = useState(true)
   const [roleFiltre, setRoleFiltre] = useState<string>('tous')
+  const [membreASupprimer, setMembreASupprimer] = useState<Personnel | null>(null)
+  const [enSuppression, setEnSuppression] = useState(false)
+  
+  // import ModalSimple locally to keep visual parity
+  // (ModalSimple will be added to this page via import below)
 
   // Chargement initial
   useEffect(() => {
@@ -271,11 +276,7 @@ export default function PagePersonnel() {
                       <button 
                         type="button" 
                         className="personnel-delete-button"
-                        onClick={() => {
-                          if (confirm('Êtes-vous sûr de vouloir supprimer ce membre?')) {
-                            supprimerMembre(membreId)
-                          }
-                        }}
+                        onClick={() => setMembreASupprimer(membre)}
                       >
                         <Trash2 className="personnel-delete-icon" />
                         <span className="sr-only">Supprimer</span>
@@ -287,6 +288,26 @@ export default function PagePersonnel() {
             })}
           </div>
         )}
+
+        {/* Modal de confirmation centralisée pour suppression de membre */}
+        <ModalSimple
+          ouvert={!!membreASupprimer}
+          onFermer={() => setMembreASupprimer(null)}
+          onConfirmer={async () => {
+            if (!membreASupprimer) return
+            setEnSuppression(true)
+            const id = membreASupprimer._id?.toString() || membreASupprimer.id || ''
+            if (id) {
+              await supprimerMembre(id)
+            }
+            setEnSuppression(false)
+            setMembreASupprimer(null)
+          }}
+          titre="Supprimer le membre"
+          description={`Êtes-vous sûr de vouloir supprimer "${membreASupprimer?.prenom} ${membreASupprimer?.nom}" ? Cette action est irréversible.`}
+          confirmText="Supprimer"
+          enChargement={enSuppression}
+        />
       </div>
     </div>
   )

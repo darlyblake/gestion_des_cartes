@@ -4,10 +4,12 @@
 
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import '@/styles/formulaire-personnel.css'
 import {
   Select,
   SelectContent,
@@ -19,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useNotification } from '@/components/notification'
 import { Upload, Loader2, Camera, Image as ImageIcon, X, Trash2 } from 'lucide-react'
 import { creerPersonnel, modifierPersonnel, uploaderImage, supprimerPersonnel } from '@/lib/services/api'
+import { ModalSimple } from '@/components/modal-simple'
 import type { Personnel, CreerPersonnelDonnees, ModifierPersonnelDonnees, Etablissement, RolePersonnel } from '@/lib/types'
 
 const ROLES: { value: RolePersonnel; label: string }[] = [
@@ -47,6 +50,7 @@ export function FormulaireMembre({
 }: FormulaireMembresProps) {
   const { afficherNotification } = useNotification()
   const [enChargement, setEnChargement] = useState(false)
+  const [ouvrirSuppression, setOuvrirSuppression] = useState(false)
   const [photoPreview, setPhotoPreview] = useState<string>(membre?.photo || '')
   const [cameraDemarree, setCameraDemarree] = useState(false)
   const refGalerie = useRef<HTMLInputElement>(null)
@@ -60,7 +64,7 @@ export function FormulaireMembre({
     email: membre?.email || '',
     telephone: membre?.telephone || '',
     photo: membre?.photo || '',
-    etablissementId: membre?.etablissementId?.toString?.() || (etablissements[0]?._id?.toString?.() || ''),
+    etablissementId: membre?.etablissementId?.toString?.() || etablissements[0]?.id || '',
   })
 
   async function traiterUploadPhoto(fichier: File) {
@@ -85,43 +89,23 @@ export function FormulaireMembre({
 
   async function demarrerCamera() {
     try {
-      console.log('=== Début demarrerCamera ===')
-      console.log('navigator:', typeof navigator)
-      console.log('navigator.mediaDevices:', navigator?.mediaDevices)
-      
-      // Vérifier que nous sommes côté client
       if (typeof window === 'undefined') {
         console.error('Erreur: Code exécuté côté serveur')
-        afficherNotification('Erreur: Code exécuté côté serveur', 'error')
+        afficherNotification('error', 'Erreur: Code exécuté côté serveur')
         return
       }
-
-      console.log('Window OK')
-
-      // Vérifier que navigator existe
       if (typeof navigator === 'undefined') {
         console.error('navigator est undefined')
-        afficherNotification('Erreur: navigator n\'est pas disponible', 'error')
+        afficherNotification('error', 'Erreur: navigator n\'est pas disponible')
         return
       }
-
-      console.log('Navigator OK')
-
-      // Vérifier la disponibilité de l'API - vérification stricte
       const hasMediaDevices = !!(navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-      console.log('hasMediaDevices:', hasMediaDevices)
       
       if (!hasMediaDevices) {
         console.error('mediaDevices ou getUserMedia n\'est pas disponible')
-        console.error('Cela peut être dû à:')
-        console.error('1. Le site n\'est pas en HTTPS')
-        console.error('2. Le navigateur ne supporte pas l\'API')
-        console.error('3. Le protocole n\'est pas secure')
-        afficherNotification('La caméra n\'est pas disponible sur votre appareil ou navigateur', 'error')
+        afficherNotification('error', 'La caméra n\'est pas disponible sur votre appareil ou navigateur')
         return
       }
-
-      console.log('API mediaDevices OK, tentative d\'accès...')
 
       const constraints = { 
         video: { 
@@ -131,38 +115,26 @@ export function FormulaireMembre({
         },
         audio: false 
       }
-      
-      console.log('Contraintes:', constraints)
-      
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
-      
-      console.log('Stream obtenu:', stream)
-      
+
       if (refCamera.current) {
-        console.log('Video ref trouvée, assignation du stream')
         refCamera.current.srcObject = stream
         setCameraDemarree(true)
-        console.log('Caméra démarrée avec succès')
       } else {
         console.error('refCamera.current est null')
       }
     } catch (erreur: any) {
       console.error('=== Erreur accès caméra ===:', erreur)
-      console.error('Nom de l\'erreur:', erreur.name)
-      console.error('Message:', erreur.message)
-      console.error('Erreur complète:', erreur)
-      
-      // Messages d'erreur spécifiques
       if (erreur.name === 'NotAllowedError') {
-        afficherNotification('Accès à la caméra refusé. Vérifiez les permissions du navigateur', 'error')
+        afficherNotification('error', 'Accès à la caméra refusé. Vérifiez les permissions du navigateur')
       } else if (erreur.name === 'NotFoundError') {
-        afficherNotification('Aucune caméra trouvée sur cet appareil', 'error')
+        afficherNotification('error', 'Aucune caméra trouvée sur cet appareil')
       } else if (erreur.name === 'NotReadableError') {
-        afficherNotification('La caméra est déjà utilisée par une autre application', 'error')
+        afficherNotification('error', 'La caméra est déjà utilisée par une autre application')
       } else if (erreur.name === 'SecurityError') {
-        afficherNotification('La caméra n\'est disponible que sur HTTPS', 'error')
+        afficherNotification('error', 'La caméra n\'est disponible que sur HTTPS')
       } else {
-        afficherNotification('Erreur accès caméra: ' + (erreur.message || 'Erreur inconnue'), 'error')
+        afficherNotification('error', 'Erreur accès caméra: ' + (erreur.message || 'Erreur inconnue'))
       }
     }
   }
@@ -180,9 +152,7 @@ export function FormulaireMembre({
       const context = refCanvas.current.getContext('2d')
       if (context) {
         context.drawImage(refCamera.current, 0, 0, refCanvas.current.width, refCanvas.current.height)
-        const imageData = refCanvas.current.toDataURL('image/jpeg')
         
-        // Convertir en Blob et uploader
         refCanvas.current.toBlob(async (blob) => {
           if (blob) {
             const fichier = new File([blob], 'photo_camera.jpg', { type: 'image/jpeg' })
@@ -196,11 +166,7 @@ export function FormulaireMembre({
 
   async function supprimerMembre() {
     if (!membre?._id?.toString()) {
-      afficherNotification('Erreur: ID du membre manquant', 'error')
-      return
-    }
-
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce membre? Cette action est irréversible.')) {
+      afficherNotification('error', 'Erreur: ID du membre manquant')
       return
     }
 
@@ -209,14 +175,14 @@ export function FormulaireMembre({
       const reponse = await supprimerPersonnel(membre._id.toString())
 
       if (reponse.succes) {
-        afficherNotification('Membre supprimé avec succès', 'success')
+        afficherNotification('success', 'Membre supprimé avec succès')
         window.location.href = '/personnel'
       } else {
-        afficherNotification(reponse.erreur || 'Erreur lors de la suppression', 'error')
+        afficherNotification('error', reponse.erreur || 'Erreur lors de la suppression')
       }
     } catch (erreur) {
       console.error('Erreur:', erreur)
-      afficherNotification('Une erreur est survenue', 'error')
+      afficherNotification('error', 'Une erreur est survenue')
     } finally {
       setEnChargement(false)
     }
@@ -226,7 +192,7 @@ export function FormulaireMembre({
     e.preventDefault()
 
     if (!donnees.nom || !donnees.prenom || !donnees.role || !donnees.fonction || !donnees.etablissementId) {
-      afficherNotification('Veuillez remplir tous les champs obligatoires', 'error')
+      afficherNotification('error', 'Veuillez remplir tous les champs obligatoires')
       return
     }
 
@@ -235,89 +201,85 @@ export function FormulaireMembre({
       let reponse
 
       if (membre) {
-        // Modification
         reponse = await modifierPersonnel(
           membre._id?.toString() || '',
           donnees as ModifierPersonnelDonnees
         )
         if (reponse.succes) {
-          afficherNotification('Membre modifié avec succès', 'success')
+          afficherNotification('success', 'Membre modifié avec succès')
           onSaved?.(membre)
           window.location.href = '/personnel'
         } else {
-          afficherNotification(reponse.erreur || 'Erreur lors de la modification', 'error')
+          afficherNotification('error', reponse.erreur || 'Erreur lors de la modification')
         }
       } else {
-        // Création
         const resultat = await creerPersonnel(donnees)
         if (resultat.succes && resultat.donnees) {
-          afficherNotification('Membre créé avec succès', 'success')
+          afficherNotification('success', 'Membre créé avec succès')
           onSaved?.(resultat.donnees)
           window.location.href = '/personnel'
         } else {
-          afficherNotification(resultat.erreur || 'Erreur lors de la création', 'error')
+          afficherNotification('error', resultat.erreur || 'Erreur lors de la création')
           return
         }
       }
     } catch (erreur) {
       console.error('Erreur:', erreur)
-      afficherNotification('Une erreur est survenue', 'error')
+      afficherNotification('error', 'Une erreur est survenue')
     } finally {
       setEnChargement(false)
     }
   }
 
   return (
-    <form onSubmit={soumettre} className="FormulaireMembre space-y-6">
+    <form onSubmit={soumettre} className="FormulaireMembre">
       {/* Photo */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Photo</CardTitle>
+      <Card className="card">
+        <CardHeader className="card-header">
+          <CardTitle className="card-title">Photo</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="card-content photo-upload-section">
           {!cameraDemarree ? (
             <>
-              <div className="flex gap-4">
-                <div className="h-32 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+              <div className="photo-container">
+                <div className="photo-preview-wrapper">
                   <img
                     src={photoPreview || '/placeholder.svg?height=128&width=96'}
                     alt="Aperçu"
-                    className="h-full w-full object-cover"
+                    className="photo-preview"
                   />
                 </div>
-                <div className="flex flex-col justify-between gap-2">
-                  {/* Galerie */}
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => {
-                      console.log('Bouton galerie cliqué')
-                      refGalerie.current?.click()
-                    }}
-                    disabled={enChargement}
-                  >
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Galerie
-                  </Button>
+                <div className="photo-controls">
                   <input
                     ref={refGalerie}
                     type="file"
                     accept="image/*"
                     className="hidden"
+                    title="Sélectionner une photo depuis la galerie"
                     onChange={(e) => {
                       const fichier = e.target.files?.[0]
-                      if (fichier) traiterUploadPhoto(fichier)
+                      if (fichier) {
+                        traiterUploadPhoto(fichier)
+                      }
                     }}
                   />
-
-                  {/* Caméra - Désactivée en HTTP */}
                   <Button 
                     type="button" 
                     variant="outline" 
-                    className="w-full"
+                    className="photo-button"
+                    onClick={() => refGalerie.current?.click()}
+                    disabled={enChargement}
+                  >
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Galerie
+                  </Button>
+
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="photo-button camera-disabled"
                     onClick={() => {
-                      afficherNotification('La caméra nécessite une connexion HTTPS ou n\'est pas disponible sur cet appareil', 'error')
+                      afficherNotification('error', 'La caméra nécessite une connexion HTTPS ou n\'est pas disponible sur cet appareil')
                     }}
                     disabled={true}
                     title="La caméra nécessite HTTPS"
@@ -332,12 +294,12 @@ export function FormulaireMembre({
             </>
           ) : (
             <>
-              <div className="space-y-2">
+              <div className="camera-active">
                 <video
                   ref={refCamera}
                   autoPlay
                   playsInline
-                  className="w-full rounded-lg bg-black h-80"
+                  className="camera-view"
                 />
                 <canvas
                   ref={refCanvas}
@@ -345,27 +307,25 @@ export function FormulaireMembre({
                   height={128}
                   className="hidden"
                 />
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  type="button" 
-                  onClick={capturerPhoto}
-                  disabled={enChargement}
-                  className="flex-1"
-                >
-                  {enChargement ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                  Capturer
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={arreterCamera}
-                  disabled={enChargement}
-                  className="flex-1"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Annuler
-                </Button>
+                <div className="camera-controls">
+                  <Button 
+                    type="button" 
+                    onClick={capturerPhoto}
+                    disabled={enChargement}
+                    className="capture-button"
+                  >
+                    {enChargement ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={arreterCamera}
+                    disabled={enChargement}
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Annuler
+                  </Button>
+                </div>
               </div>
             </>
           )}
@@ -373,30 +333,32 @@ export function FormulaireMembre({
       </Card>
 
       {/* Informations personnelles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
+      <Card className="card">
+        <CardHeader className="card-header">
+          <CardTitle className="card-title">Informations personnelles</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="nom">Nom *</Label>
+        <CardContent className="card-content">
+          <div className="form-grid">
+            <div className="form-field-group">
+              <Label htmlFor="nom" className="form-label">Nom <span className="form-label-required">*</span></Label>
               <Input
                 id="nom"
                 value={donnees.nom}
                 onChange={(e) => setDonnees({ ...donnees, nom: e.target.value })}
                 placeholder="Dupont"
                 disabled={enChargement}
+                className="form-input"
               />
             </div>
-            <div>
-              <Label htmlFor="prenom">Prénom *</Label>
+            <div className="form-field-group">
+              <Label htmlFor="prenom" className="form-label">Prénom <span className="form-label-required">*</span></Label>
               <Input
                 id="prenom"
                 value={donnees.prenom}
                 onChange={(e) => setDonnees({ ...donnees, prenom: e.target.value })}
                 placeholder="Jean"
                 disabled={enChargement}
+                className="form-input"
               />
             </div>
           </div>
@@ -404,106 +366,135 @@ export function FormulaireMembre({
       </Card>
 
       {/* Informations professionnelles */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations professionnelles</CardTitle>
+      <Card className="card">
+        <CardHeader className="card-header">
+          <CardTitle className="card-title">Informations professionnelles</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="etablissement">Établissement *</Label>
-            <Select
-              value={donnees.etablissementId}
-              onValueChange={(value) =>
-                setDonnees({ ...donnees, etablissementId: value })
-              }
-              disabled={enChargement}
-            >
-              <SelectTrigger id="etablissement">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {etablissements.map((etab, idx) => (
-                  <SelectItem
-                    key={etab._id?.toString() || etab.nom || `etab-${idx}`}
-                    value={etab._id?.toString() || etab.nom || `etab-${idx}`}
-                  >
-                    {etab.nom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <CardContent className="card-content">
+          <div className="space-y-4">
+            <div className="form-field-group">
+              <Label htmlFor="etablissement" className="form-label">Établissement <span className="form-label-required">*</span></Label>
+              {etablissements && etablissements.length > 0 ? (
+                <Select
+                  value={donnees.etablissementId || ''}
+                  onValueChange={(value) =>
+                    setDonnees({ ...donnees, etablissementId: value })
+                  }
+                  disabled={enChargement}
+                >
+                  <SelectTrigger id="etablissement" className="form-select-trigger">
+                    <SelectValue placeholder="Sélectionnez un établissement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {etablissements.map((etab) => (
+                      <SelectItem
+                        key={etab.id ?? ''}
+                        value={etab.id ?? ''}
+                      >
+                        {etab.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="form-info-message">
+                  Aucun établissement disponible. 
+                  <Link href="/etablissements/nouveau">
+                    Créer un établissement
+                  </Link>
+                </div>
+              )}
+            </div>
 
-          <div>
-            <Label htmlFor="role">Rôle *</Label>
-            <Select
-              value={donnees.role}
-              onValueChange={(value) =>
-                setDonnees({ ...donnees, role: value as any })
-              }
-              disabled={enChargement}
-            >
-              <SelectTrigger id="role">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((role) => (
-                  <SelectItem key={role.value} value={role.value}>
-                    {role.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+            <div className="form-field-group">
+              <Label htmlFor="role" className="form-label">Rôle <span className="form-label-required">*</span></Label>
+              <Select
+                value={donnees.role}
+                onValueChange={(value) =>
+                  setDonnees({ ...donnees, role: value as any })
+                }
+                disabled={enChargement}
+              >
+                <SelectTrigger id="role" className="form-select-trigger">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      {role.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <Label htmlFor="fonction">Fonction *</Label>
-            <Input
-              id="fonction"
-              value={donnees.fonction}
-              onChange={(e) => setDonnees({ ...donnees, fonction: e.target.value })}
-              placeholder="Directeur général"
-              disabled={enChargement}
-            />
+            <div className="form-field-group">
+              <Label htmlFor="fonction" className="form-label">Fonction <span className="form-label-required">*</span></Label>
+              <Input
+                id="fonction"
+                value={donnees.fonction}
+                onChange={(e) => setDonnees({ ...donnees, fonction: e.target.value })}
+                placeholder="Directeur général"
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Informations de contact */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations de contact</CardTitle>
+      <Card className="card">
+        <CardHeader className="card-header">
+          <CardTitle className="card-title">Informations de contact</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={donnees.email}
-              onChange={(e) => setDonnees({ ...donnees, email: e.target.value })}
-              placeholder="jean.dupont@example.com"
-              disabled={enChargement}
-            />
-          </div>
+        <CardContent className="card-content">
+          <div className="space-y-4">
+            <div className="form-field-group">
+              <Label htmlFor="email" className="form-label">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={donnees.email}
+                onChange={(e) => setDonnees({ ...donnees, email: e.target.value })}
+                placeholder="jean.dupont@example.com"
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
 
-          <div>
-            <Label htmlFor="telephone">Téléphone</Label>
-            <Input
-              id="telephone"
-              type="tel"
-              value={donnees.telephone}
-              onChange={(e) => setDonnees({ ...donnees, telephone: e.target.value })}
-              placeholder="+33 1 23 45 67 89"
-              disabled={enChargement}
-            />
+            <div className="form-field-group">
+              <Label htmlFor="telephone" className="form-label">Téléphone</Label>
+              <Input
+                id="telephone"
+                type="tel"
+                value={donnees.telephone}
+                onChange={(e) => setDonnees({ ...donnees, telephone: e.target.value })}
+                placeholder="+33 1 23 45 67 89"
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Boutons d'action */}
-      <div className="flex gap-4">
-        <Button type="submit" disabled={enChargement}>
+      <div className="form-actions">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => window.history.back()}
+          disabled={enChargement}
+          className="action-button action-button--secondary"
+        >
+          Annuler
+        </Button>
+        <Button 
+          type="submit" 
+          disabled={enChargement}
+          className="action-button action-button--primary action-button--lg"
+        >
           {enChargement ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -515,25 +506,30 @@ export function FormulaireMembre({
             'Créer'
           )}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => window.history.back()}
-          disabled={enChargement}
-        >
-          Annuler
-        </Button>
         {membre && (
           <Button
             type="button"
             variant="destructive"
-            onClick={supprimerMembre}
+            onClick={() => setOuvrirSuppression(true)}
             disabled={enChargement}
-            className="ml-auto"
+            className="action-button action-button--destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Supprimer
           </Button>
+        )}
+        {membre && (
+          <ModalSimple
+            ouvert={ouvrirSuppression}
+            onFermer={() => setOuvrirSuppression(false)}
+            onConfirmer={async () => {
+              await supprimerMembre()
+            }}
+            titre="Supprimer le membre"
+            description={`Êtes-vous sûr de vouloir supprimer "${membre.prenom} ${membre.nom}" ? Cette action est irréversible.`}
+            confirmText="Supprimer"
+            enChargement={enChargement}
+          />
         )}
       </div>
     </form>

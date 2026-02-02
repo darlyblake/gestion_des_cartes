@@ -59,21 +59,23 @@ export default function PageModifierPersonnel() {
   }
 
   return (
-    <div className="container px-4 py-6 max-w-2xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Modifier le personnel</h1>
-        <p className="text-muted-foreground">
-          {personnel.prenom} {personnel.nom}
-        </p>
-      </div>
+    <div className="page-personnel-modifier">
+      <div className="personnel-modifier-container">
+        <div className="personnel-modifier-header">
+          <h1 className="personnel-modifier-title">Modifier le personnel</h1>
+          <p className="personnel-modifier-description">
+            Mettez à jour les informations de {personnel.prenom} {personnel.nom}
+          </p>
+        </div>
 
-      <FormulaireMembre
-        membre={personnel}
-        etablissements={etablissements}
-        onSaved={() => {
-          router.push('/personnel')
-        }}
-      />
+        <FormulaireMembre
+          membre={personnel}
+          etablissements={etablissements}
+          onSaved={() => {
+            router.push('/personnel')
+          }}
+        />
+      </div>
     </div>
   )
 }

@@ -7,7 +7,7 @@
 
 import React from "react"
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, Upload, Loader2, User } from 'lucide-react'
-import type { Eleve, Classe, Sexe, CreerEleveDonnees } from '@/lib/types'
+import type { Eleve, Classe, Sexe, CreerEleveDonnees, Etablissement } from '@/lib/types'
 
 /**
  * Props du composant FormulaireEleve
@@ -30,6 +30,8 @@ interface FormulaireEleveProps {
   eleve?: Eleve
   /** Liste des classes disponibles */
   classes: Classe[]
+  /** Liste des établissements (optionnel) */
+  etablissements?: Etablissement[]
   /** Classe pré-sélectionnée */
   classeIdDefaut?: string
   /** Fonction appelée lors de la soumission */
@@ -46,6 +48,7 @@ interface FormulaireEleveProps {
 export function FormulaireEleve({
   eleve,
   classes,
+  etablissements = [],
   classeIdDefaut,
   onSoumettre,
   onAnnuler,
@@ -62,6 +65,7 @@ export function FormulaireEleve({
   const [lieuNaissance, setLieuNaissance] = useState(eleve?.lieuNaissance || '')
   const [sexe, setSexe] = useState<Sexe>(eleve?.sexe || 'M')
   const [classeId, setClasseId] = useState(eleve?.classeId || classeIdDefaut || '')
+  const [etablissementId, setEtablissementId] = useState<string>('')
   const [photo, setPhoto] = useState(eleve?.photo || '')
   const [photoPreview, setPhotoPreview] = useState(eleve?.photo || '')
   const [erreurs, setErreurs] = useState<Record<string, string>>({})
@@ -111,6 +115,7 @@ export function FormulaireEleve({
     if (!nom.trim()) nouvellesErreurs.nom = 'Le nom est requis'
     if (!prenom.trim()) nouvellesErreurs.prenom = 'Le prénom est requis'
     if (!dateNaissance) nouvellesErreurs.dateNaissance = 'La date de naissance est requise'
+    if (!etablissementId) nouvellesErreurs.etablissementId = 'L\'établissement est requis'
     if (!classeId) nouvellesErreurs.classeId = 'La classe est requise'
 
     setErreurs(nouvellesErreurs)
@@ -122,8 +127,12 @@ export function FormulaireEleve({
    */
   const gererSoumission = async (event: React.FormEvent) => {
     event.preventDefault()
+    console.warn('FormulaireEleve: soumission déclenchée')
 
-    if (!validerFormulaire()) return
+    if (!validerFormulaire()) {
+      console.warn('FormulaireEleve: validation échouée', { erreurs })
+      return
+    }
 
     const donnees: CreerEleveDonnees = {
       nom: nom.trim(),
@@ -135,35 +144,72 @@ export function FormulaireEleve({
       photo: photo || undefined,
     }
 
-    await onSoumettre(donnees)
+    console.warn('FormulaireEleve: données prêtes, appel onSoumettre', { donnees })
+    try {
+      await onSoumettre(donnees)
+      console.warn('FormulaireEleve: onSoumettre resolved')
+    } catch (err) {
+      console.error('FormulaireEleve: erreur lors de onSoumettre', err)
+      throw err
+    }
   }
 
+  // Si une classe par défaut est fournie, tenter de pré-sélectionner l'établissement
+  useEffect(() => {
+    // 1) Si on a une classe par défaut passée en prop (création depuis une classe)
+    if (!etablissementId && classeIdDefaut) {
+      const c = classes.find(cl => (cl.id || cl._id?.toString()) === classeIdDefaut)
+      if (c?.etablissementId) {
+        setEtablissementId(c.etablissementId)
+        return
+      }
+    }
+
+    // 2) Si on est en modification et que le formulaire a une classe sélectionnée,
+    //    dériver l'établissement à partir de cette classe.
+    if (!etablissementId && classeId) {
+      const c2 = classes.find(cl => (cl.id || cl._id?.toString()) === classeId)
+      if (c2?.etablissementId) {
+        setEtablissementId(c2.etablissementId)
+      }
+    }
+  }, [classeIdDefaut, classes, etablissementId])
+
+  const classesAffichees = etablissementId
+    ? classes.filter(c => c.etablissementId === etablissementId)
+    : classes
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {eleve ? 'Modifier l\'élève' : 'Nouvel élève'}
+    <Card className="formulaire-card">
+      <CardHeader className="formulaire-header">
+        <CardTitle className="text-2xl font-bold">
+          {eleve ? '✏️ Modifier l\'élève' : '➕ Nouvel élève'}
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={gererSoumission} className="space-y-6">
-          {/* Photo de l'élève */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="h-32 w-28 overflow-hidden rounded-lg border-2 border-dashed border-border bg-muted flex items-center justify-center">
-                {photoPreview ? (
-                  <img 
-                    src={photoPreview || "/placeholder.svg"} 
-                    alt="Photo de l'élève"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <User className="h-12 w-12 text-muted-foreground" />
-                )}
+      <CardContent className="formulaire-content">
+        <form onSubmit={gererSoumission} className="space-y-6 form-animate-in">
+          {/* Section Photo */}
+          <div className="form-section">
+            <h3 className="form-section-title">
+              <span>📷</span>
+              <span>Photo</span>
+            </h3>
+            <div className="flex flex-col items-center gap-4 pt-2">
+              <div className="relative">
+                <div className="h-40 w-32 photo-preview">
+                  {photoPreview ? (
+                    <img 
+                      src={photoPreview || "/placeholder.svg"} 
+                      alt="Photo de l'élève"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-12 w-12 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex gap-2">
+              
+              <div className="flex gap-2">
               <label htmlFor="photo-input" className="sr-only">
                 Sélectionner une photo
               </label>
@@ -203,36 +249,44 @@ export function FormulaireEleve({
             {erreurs.photo && (
               <p className="text-sm text-destructive">{erreurs.photo}</p>
             )}
+            </div>
           </div>
 
-          {/* Nom et Prénom */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="nom">Nom *</Label>
-              <Input
-                id="nom"
-                placeholder="DUPONT"
-                value={nom}
-                onChange={(e) => setNom(e.target.value.toUpperCase())}
-                className={erreurs.nom ? 'border-destructive' : ''}
-              />
-              {erreurs.nom && (
-                <p className="text-sm text-destructive">{erreurs.nom}</p>
-              )}
-            </div>
+          {/* Section Informations Personnelles */}
+          <div className="form-section">
+            <h3 className="form-section-title">
+              <span>👤</span>
+              <span>Informations personnelles</span>
+            </h3>
             
-            <div className="space-y-2">
-              <Label htmlFor="prenom">Prénom *</Label>
-              <Input
-                id="prenom"
-                placeholder="Marie"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
-                className={erreurs.prenom ? 'border-destructive' : ''}
-              />
-              {erreurs.prenom && (
-                <p className="text-sm text-destructive">{erreurs.prenom}</p>
-              )}
+            <div className="form-grid pt-2">
+              <div className="form-group">
+                <Label htmlFor="nom">Nom *</Label>
+                <Input
+                  id="nom"
+                  placeholder="DUPONT"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value.toUpperCase())}
+                  className={erreurs.nom ? 'form-control form-error-field' : 'form-control'}
+                />
+                {erreurs.nom && (
+                  <p className="form-error">{erreurs.nom}</p>
+                )}
+              </div>
+              
+              <div className="form-group">
+                <Label htmlFor="prenom">Prénom *</Label>
+                <Input
+                  id="prenom"
+                  placeholder="Marie"
+                  value={prenom}
+                  onChange={(e) => setPrenom(e.target.value)}
+                  className={erreurs.prenom ? 'form-control form-error-field' : 'form-control'}
+                />
+                {erreurs.prenom && (
+                  <p className="form-error">{erreurs.prenom}</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -267,7 +321,7 @@ export function FormulaireEleve({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="sexe">Sexe *</Label>
-              <Select value={sexe} onValueChange={(v) => setSexe(v as Sexe)}>
+              <Select value={sexe || ''} onValueChange={(v) => setSexe(v as Sexe)}>
                 <SelectTrigger id="sexe">
                   <SelectValue placeholder="Sélectionner le sexe" />
                 </SelectTrigger>
@@ -279,28 +333,52 @@ export function FormulaireEleve({
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="classe">Classe *</Label>
+                <Label htmlFor="etablissement">Établissement *</Label>
+                <Select value={etablissementId || ''} onValueChange={(v) => setEtablissementId(v)}>
+                  <SelectTrigger id="etablissement">
+                    <SelectValue placeholder="Sélectionner un établissement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(etablissements ?? []).map((etab, idx) => (
+                      <SelectItem key={etab.id || etab._id?.toString() || `etab-${idx}`} value={etab.id || etab._id?.toString() || ''}>
+                        {etab.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {erreurs.etablissementId && (
+                  <p className="text-sm text-destructive">{erreurs.etablissementId}</p>
+                )}
+
+                <Label htmlFor="classe">Classe *</Label>
               <Select 
                 value={classeId} 
                 onValueChange={setClasseId}
+                disabled={classesAffichees.length === 0}
               >
                 <SelectTrigger 
                   id="classe"
                   className={erreurs.classeId ? 'border-destructive' : ''}
+                  disabled={classesAffichees.length === 0}
                 >
                   <SelectValue placeholder="Sélectionner une classe" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classes.map((classe, idx) => (
-                    <SelectItem
-                      key={classe._id?.toString() || `${classe.nom}-${classe.niveau}` || `classe-${idx}`}
-                      value={classe._id?.toString() || `${classe.nom}-${classe.niveau}` || `classe-${idx}`}
-                    >
-                      {classe.nom} - {classe.niveau}
-                    </SelectItem>
-                  ))}
+                    {classesAffichees.map((classe, idx) => (
+                      <SelectItem
+                        key={classe.id || classe._id?.toString() || `classe-${idx}`}
+                        value={classe.id || classe._id?.toString() || `classe-${idx}`}
+                      >
+                        {classe.nom} - {classe.niveau}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
+              {classesAffichees.length === 0 && (
+                <p className="text-sm text-muted" style={{ marginTop: 8 }}>
+                  Aucune classe disponible pour cet établissement.
+                </p>
+              )}
               {erreurs.classeId && (
                 <p className="text-sm text-destructive">{erreurs.classeId}</p>
               )}
@@ -308,16 +386,22 @@ export function FormulaireEleve({
           </div>
 
           {/* Boutons d'action */}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
               onClick={onAnnuler}
               disabled={enChargement}
+              className="flex-1 sm:flex-none"
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={enChargement}>
+            <Button 
+              type="submit" 
+              disabled={enChargement || classesAffichees.length === 0}
+              className="flex-1 sm:flex-none"
+              size="lg"
+            >
               {enChargement && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}

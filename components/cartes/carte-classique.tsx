@@ -27,7 +27,8 @@ interface CarteClassiqueProps {
 /**
  * Formate une date en français
  */
-function formaterDate(date: Date | string): string {
+function formaterDate(date?: Date | string | undefined): string {
+  if (!date) return '—'
   const d = new Date(date)
   return d.toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -50,7 +51,7 @@ export function CarteClassique({
   const couleur = normaliserCouleur(etablissement.couleur)
 
   // Génération du QR Code
-  const donneesQR = formaterDonneesCarteQR(eleve.id, eleve.matricule, etablissement.nom)
+  const donneesQR = formaterDonneesCarteQR(eleve.id ?? '', eleve.matricule ?? '', etablissement.nom ?? '')
   const qrCodeUrl = genererQRCodeDataURL({
     donnees: donneesQR,
     taille: 60,

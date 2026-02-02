@@ -29,7 +29,8 @@ interface CarteModerneRectoVersoProps {
 /**
  * Formate une date en français
  */
-function formaterDate(date: Date | string): string {
+function formaterDate(date?: Date | string | undefined): string {
+  if (!date) return '—'
   const d = new Date(date)
   return d.toLocaleDateString('fr-FR', {
     day: '2-digit',
@@ -61,7 +62,7 @@ export function CarteModerneRectoVerso({
   face = 'les-deux',
 }: CarteModerneRectoVersoProps) {
   // Génération du QR Code
-  const donneesQR = formaterDonneesCarteQR(eleve.id, eleve.matricule, etablissement.nom)
+  const donneesQR = formaterDonneesCarteQR(eleve.id ?? '', eleve.matricule ?? '', etablissement.nom ?? '')
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -437,15 +438,27 @@ export function CarteModerneRectoVerso({
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '8px', color: '#64748b', marginBottom: '4px' }}>
-              Cachet et signature
+              Signature
             </div>
-            <div
-              style={{
-                width: '60px',
-                height: '2px',
-                borderBottom: '1px dashed #94a3b8',
-              }}
-            />
+            {etablissement.signature ? (
+              <img
+                src={etablissement.signature}
+                alt="Signature"
+                style={{
+                  maxWidth: '60px',
+                  maxHeight: '30px',
+                  objectFit: 'contain',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '60px',
+                  height: '2px',
+                  borderBottom: '1px dashed #94a3b8',
+                }}
+              />
+            )}
           </div>
         </div>
       </div>

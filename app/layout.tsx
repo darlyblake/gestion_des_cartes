@@ -4,15 +4,15 @@
  */
 
 import '../styles/globals.css'
+import '../styles/buttons.css'
+import '../styles/forms.css'
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Entete } from '@/components/entete'
 import { FournisseurNotification } from '@/components/notification'
 
-const _geist = Geist({ subsets: ['latin'] })
-const _geistMono = Geist_Mono({ subsets: ['latin'] })
+// Fonts are intentionally not loaded from Google during CI/offline validation
 
 /**
  * Métadonnées de l'application

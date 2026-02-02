@@ -98,6 +98,86 @@ p.text-muted-foreground {
   opacity: 0;
 }
 
+/* Assurer que les portails Radix UI (Select, Popover, etc.) s'affichent correctement */
+/* Cela s'applique au contexte global pour les composants de la page */
+.container {
+  --radix-select-content-z-index: auto;
+}
+
+/* Force le z-index du contenu des Select et autres portails */
+[data-slot="select-content"] {
+  z-index: 50 !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+  border: 1px solid rgba(100, 116, 139, 0.15);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+/* Style des items du Select */
+[data-slot="select-item"] {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.625rem;
+  font-weight: 500;
+}
+
+[data-slot="select-item"]:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  transform: translateX(2px);
+}
+
+[data-slot="select-item"]:focus,
+[data-slot="select-item"]:focus-visible {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%);
+  box-shadow: inset 0 0 0 2px rgba(99, 102, 241, 0.3);
+}
+
+[data-slot="select-item"][data-state="checked"] {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.15) 100%);
+  color: rgb(67, 56, 202);
+  font-weight: 600;
+}
+
+[data-slot="select-item"][data-state="checked"]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, rgb(99, 102, 241) 0%, rgb(168, 85, 247) 100%);
+  border-radius: 0.625rem 0 0 0.625rem;
+}
+
+/* Empêcher les cartes d'avoir un overflow qui bloquerait les portails */
+[data-slot="card"] {
+  overflow: visible;
+}
+
+/* ScrollUp/Down buttons styling */
+[data-slot="select-scroll-up-button"],
+[data-slot="select-scroll-down-button"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  cursor: pointer;
+  color: rgb(100, 116, 139);
+  transition: all 0.2s ease;
+}
+
+[data-slot="select-scroll-up-button"]:hover,
+[data-slot="select-scroll-down-button"]:hover {
+  color: rgb(99, 102, 241);
+  transform: scale(1.1);
+}
+
+/* Separator styling */
+[data-slot="select-separator"] {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 116, 139, 0.1), transparent);
+  margin: 0.5rem 0;
+}
+
 /* Animation du formulaire */
 .FormulaireMembre {
   animation: fadeInUp 0.8s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;

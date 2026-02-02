@@ -7,7 +7,7 @@ import { FormulaireEleve } from '@/components/formulaire-eleve'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft } from 'lucide-react'
-import { recupererClasses, creerEleve } from '@/lib/services/api'
+import { recupererClasses, recupererEtablissements, creerEleve } from '@/lib/services/api'
 import { useFetchCached, invalidateCache } from '@/hooks/use-fetch-cached'
 import type { Classe, CreerEleveDonnees } from '@/lib/types'
 import '@/styles/page-eleves-nouveau.css'
@@ -20,12 +20,19 @@ export default function PageNouvelEleve() {
 
   const [enSoumission, setEnSoumission] = useState(false)
 
-  // Utiliser le hook de caching pour recuperer les classes
+  // Utiliser le hook de caching pour recuperer les classes et établissements
   const { data: classes = [], erreur, isLoading: enChargement } = useFetchCached(
     () => recupererClasses(),
     'classes_list',
     5 * 60 * 1000 // Cache 5 minutes
   )
+
+  const { data: etablissementsData } = useFetchCached(
+    () => recupererEtablissements(),
+    'etablissements_list',
+    5 * 60 * 1000
+  )
+  const etablissements = etablissementsData ?? []
 
   const gererSoumission = useCallback(async (donnees: CreerEleveDonnees) => {
     setEnSoumission(true)
@@ -81,6 +88,7 @@ export default function PageNouvelEleve() {
         ) : (
           <FormulaireEleve
             classes={classes}
+            etablissements={etablissements}
             classeIdDefaut={classeIdDefaut}
             onSoumettre={gererSoumission}
             onAnnuler={() => routeur.back()}

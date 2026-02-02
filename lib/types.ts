@@ -12,6 +12,7 @@ export interface Etablissement {
   id?: string
   nom: string
   logo: string
+  signature?: string
   adresse: string
   telephone: string
   email?: string
@@ -29,6 +30,7 @@ export interface Etablissement {
 export interface CreerEtablissementDonnees {
   nom: string
   logo?: string
+  signature?: string
   adresse: string
   telephone: string
   email?: string

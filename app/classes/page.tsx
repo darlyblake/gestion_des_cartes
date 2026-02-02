@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
-import { ModalConfirmation } from '@/components/modal-confirmation'
+import { ModalSimple } from '@/components/modal-simple'
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -101,7 +101,9 @@ export default function PageClasses() {
     try {
       const idClasse = classeASupprimer._id || classeASupprimer.id || ''
       if (!idClasse) throw new Error('ID de la classe manquant')
+
       const reponse = await supprimerClasse(idClasse)
+
       if (reponse.succes) {
         setClasses(prev => prev.filter(c => (c._id || c.id) !== idClasse))
         afficherNotification('succes', 'Classe supprimée avec succès')
@@ -109,7 +111,7 @@ export default function PageClasses() {
         afficherNotification('erreur', reponse.erreur || 'Erreur lors de la suppression')
       }
     } catch (erreur) {
-      console.error('Erreur:', erreur)
+      console.error('❌ Erreur suppression:', erreur)
       afficherNotification('erreur', 'Erreur lors de la suppression')
     } finally {
       setEnSuppression(false)
@@ -201,7 +203,11 @@ export default function PageClasses() {
             {classesFiltrees.map((classe, idx) => {
               const identifiantClasse = classe.id ?? classe._id?.toString() ?? `classe-${idx}`
               return (
-                <div key={identifiantClasse} className="class-card">
+                <div
+                  key={identifiantClasse}
+                  className="class-card"
+                  onClick={() => console.warn('🖱️ clic sur carte', identifiantClasse)}
+                >
                   <div className="class-card-header">
                     <div className="class-card-title-section">
                       <div className="class-card-icon">
@@ -232,11 +238,10 @@ export default function PageClasses() {
                     <div className="class-actions">
                       <button 
                         type="button"
-                        onClick={() => {
-                          const classeId = classe._id || classe.id
-                          console.log('Ajouter élève:', classeId)
-                          window.location.href = `/eleves/nouveau?classeId=${classeId}`
-                        }}
+                                onClick={() => {
+                                  const classeId = classe._id || classe.id
+                                  window.location.href = `/eleves/nouveau?classeId=${classeId}`
+                                }}
                         className="class-action-button primary"
                       >
                         <Plus size={16} />
@@ -246,7 +251,6 @@ export default function PageClasses() {
                         type="button"
                         onClick={() => {
                           const classeId = classe._id || classe.id
-                          console.log('Modifier classe:', classeId)
                           window.location.href = `/classes/${classeId}/modifier`
                         }}
                         className="class-action-icon edit"
@@ -259,7 +263,11 @@ export default function PageClasses() {
                         type="button"
                         className="class-action-icon delete"
                         onClick={() => {
-                          console.log('Supprimer classe:', classe)
+                          const nb = classe.nombreEleves || 0
+                          if (nb > 0) {
+                            afficherNotification('erreur', 'Impossible de supprimer : des élèves sont inscrits dans cette classe')
+                            return
+                          }
                           setClasseASupprimer(classe)
                         }}
                         title="Supprimer"
@@ -276,17 +284,17 @@ export default function PageClasses() {
         )}
       </div>
 
-      {/* Modal de confirmation de suppression */}
-      <ModalConfirmation
+      <ModalSimple
         ouvert={!!classeASupprimer}
         onFermer={() => setClasseASupprimer(null)}
         onConfirmer={gererSuppression}
         titre="Supprimer la classe"
         description={`Êtes-vous sûr de vouloir supprimer la classe "${classeASupprimer?.nom}" ? Cette action est irréversible.`}
-        texteConfirmation="Supprimer"
-        variante="destructive"
+        confirmText="Supprimer"
         enChargement={enSuppression}
       />
+
+     
     </div>
   )
 }

@@ -9,7 +9,7 @@ import '@/styles/page-etablissements.css'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ChargementPage } from '@/components/chargement'
-import { ModalConfirmation } from '@/components/modal-confirmation'
+import { ModalSimple } from '@/components/modal-simple'
 import { useNotification } from '@/components/notification'
 import { normaliserCouleur } from '@/lib/utils'
 import { 
@@ -67,11 +67,18 @@ export default function PageEtablissements() {
   const gererSuppression = async () => {
     if (!etablissementASupprimer) return
 
+    const id = etablissementASupprimer.id || etablissementASupprimer._id?.toString() || ''
+    if (!id) {
+      afficherNotification('erreur', "ID de l'établissement manquant")
+      setEtablissementASupprimer(null)
+      return
+    }
+
     setEnSuppression(true)
     try {
-      const reponse = await supprimerEtablissement(etablissementASupprimer.id)
+      const reponse = await supprimerEtablissement(id)
       if (reponse.succes) {
-        setEtablissements(prev => prev.filter(e => e.id !== etablissementASupprimer.id))
+        setEtablissements(prev => prev.filter(e => (e.id || e._id?.toString()) !== id))
         afficherNotification('succes', 'Établissement supprimé avec succès')
       } else {
         afficherNotification('erreur', reponse.erreur || 'Erreur lors de la suppression')
@@ -95,10 +102,18 @@ export default function PageEtablissements() {
       <div className="container px-4 py-6 space-y-6">
         {/* En-tête */}
         <div className="establishments-header">
-          <h1 className="establishments-title">Établissements</h1>
-          <p className="establishments-count">
-            {etablissements.length} établissement{etablissements.length > 1 ? 's' : ''} enregistré{etablissements.length > 1 ? 's' : ''}
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <h1 className="establishments-title">Établissements</h1>
+              <p className="establishments-count">
+                {etablissements.length} établissement{etablissements.length > 1 ? 's' : ''} enregistré{etablissements.length > 1 ? 's' : ''}
+              </p>
+            </div>
+            <Link href="/etablissements/nouveau" className="establishments-empty-button" style={{ margin: 0 }}>
+              <Plus className="establishments-empty-button-icon" />
+              Créer un établissement
+            </Link>
+          </div>
         </div>
 
         {/* Barre de recherche */}
@@ -181,7 +196,7 @@ export default function PageEtablissements() {
                       type="button"
                       onClick={() => {
                         const etabId = etablissement._id?.toString() || etablissement.id
-                        console.log('Voir détails:', etabId)
+                        console.warn('Voir détails:', etabId)
                         window.location.href = `/etablissements/${etabId}`
                       }}
                       className="establishment-action-button details"
@@ -192,7 +207,7 @@ export default function PageEtablissements() {
                       type="button"
                       onClick={() => {
                         const etabId = etablissement._id?.toString() || etablissement.id
-                        console.log('Modifier établissement:', etabId)
+                        console.warn('Modifier établissement:', etabId)
                         window.location.href = `/etablissements/${etabId}/modifier`
                       }}
                       className="establishment-action-icon edit"
@@ -204,7 +219,7 @@ export default function PageEtablissements() {
                       type="button"
                       className="establishment-action-icon delete"
                       onClick={() => {
-                        console.log('Supprimer établissement:', etablissement)
+                        console.warn('Supprimer établissement:', etablissement)
                         setEtablissementASupprimer(etablissement)
                       }}
                       title="Supprimer"
@@ -219,14 +234,13 @@ export default function PageEtablissements() {
         )}
 
         {/* Modal de confirmation de suppression */}
-        <ModalConfirmation
+        <ModalSimple
           ouvert={!!etablissementASupprimer}
           onFermer={() => setEtablissementASupprimer(null)}
           onConfirmer={gererSuppression}
           titre="Supprimer l'établissement"
           description={`Êtes-vous sûr de vouloir supprimer "${etablissementASupprimer?.nom}" ? Cette action est irréversible.`}
-          texteConfirmation="Supprimer"
-          variante="destructive"
+          confirmText="Supprimer"
           enChargement={enSuppression}
         />
       </div>

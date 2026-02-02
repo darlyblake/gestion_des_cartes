@@ -1,6 +1,8 @@
 /**
  * Composant de chargement pour la page cartes
  */
-export default function Loading() {
+import type { ReactNode } from 'react'
+
+export default function Loading(): ReactNode {
   return null
 }
