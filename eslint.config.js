@@ -1,3 +1,7 @@
 // Delegate to CommonJS config to avoid ESM-only package imports here.
-const mod = await import('./eslint.config.cjs');
-export default (mod && (mod.default || mod));
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const config = require('./eslint.config.cjs');
+
+export default config;
+
