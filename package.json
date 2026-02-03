@@ -1,5 +1,6 @@
 {
   "name": "school-card-application",
+  "type": "module",
   "version": "1.0.0",
   "description": "Application de gestion et creation de cartes scolaires pour etablissements",
   "author": "School Card Team",
