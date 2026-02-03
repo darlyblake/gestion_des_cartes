@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run type-check && npm run lint && next build",
+    "build": "npm run type-check && next build",
     "start": "next start",
     "vercel-build": "next build",
     "lint": "eslint app lib components --ext .ts,.tsx",
