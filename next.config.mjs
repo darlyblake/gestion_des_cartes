@@ -66,11 +66,5 @@ const nextConfig = {
 
 // Merge any legacy CommonJS export options into the ESM `nextConfig` object
 // (previously using `module.exports` caused `module is not defined` in ESM)
-nextConfig.eslint = nextConfig.eslint || {}
-nextConfig.eslint.ignoreDuringBuilds = true
-nextConfig.typescript = nextConfig.typescript || {}
-// Keep production safety: do not ignore build errors by default in production.
-// This flag is set true here only to match previous behavior during CI if needed.
-nextConfig.typescript.ignoreBuildErrors = true
-
+// No legacy overrides applied here — keep config keys supported by Next.js.
 export default nextConfig
