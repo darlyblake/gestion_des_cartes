@@ -9,16 +9,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run type-check && next build",
-    "start": "next start",
     "vercel-build": "next build",
-    "lint": "eslint app lib components --ext .ts,.tsx",
-    "lint:fix": "eslint app lib components --ext .ts,.tsx --fix",
-    "type-check": "tsc --noEmit",
-    "analyze": "ANALYZE=true npm run build",
-    "validate:prod": "bash ./scripts/validate-production.sh"
+    "start": "next start",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@eslint/js": "^9.39.2",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -62,8 +57,8 @@
     "next": "^16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.0",
-    "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
+    "react-day-picker": "9.8.0",
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
@@ -75,11 +70,6 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
-    "babel-plugin-transform-remove-console": "^6.9.4",
-    "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.6",
     "typescript": "^5"
   }
 }
