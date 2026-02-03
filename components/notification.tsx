@@ -116,7 +116,7 @@ interface NotificationItemProps {
  */
 function NotificationItem({ notification, onFermer }: NotificationItemProps) {
   // Configuration des styles par type
-  const configurations: Record<string, { icone: any; classes: string; iconeClasses: string }> = {
+  const configurations: Record<string, { icone: React.ComponentType<React.SVGProps<SVGSVGElement>>; classes: string; iconeClasses: string }> = {
     succes: {
       icone: CheckCircle,
       classes: 'bg-green-50 border-green-200 text-green-800',

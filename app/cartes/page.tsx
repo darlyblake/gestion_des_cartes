@@ -15,7 +15,6 @@ import React, {
   useState,
   useEffect,
   useRef,
-  Suspense,
   useCallback,
   useMemo,
 } from 'react'
@@ -32,7 +31,6 @@ import {
 import {
   CarteClassique,
   CarteModerne,
-  CarteExamen,
   CarteRectoVerso,
   CartePersonnel,
   TEMPLATES_CARTES,
@@ -295,7 +293,7 @@ function ContenuPageCartes() {
                       ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
                     }
                   }
-                } catch (inner) {
+                } catch {
                   // ignore inaccessible properties
                 }
               }
@@ -313,12 +311,11 @@ function ContenuPageCartes() {
                 }
               `
               ;(doc.head || doc.body).appendChild(style)
-            } catch (inner) {
+            } catch {
               // ignore
             }
           } catch (e) {
             // Ne pas bloquer le rendu si l'opération échoue
-            // eslint-disable-next-line no-console
             console.warn('onclone color sanitize failed', e)
           }
         },
@@ -420,7 +417,7 @@ function ContenuPageCartes() {
                         ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
                       }
                     }
-                  } catch (inner) {
+                  } catch {
                     // ignore inaccessible properties
                   }
                 }
@@ -438,11 +435,10 @@ function ContenuPageCartes() {
                   }
                 `
                 ;(doc.head || doc.body).appendChild(style)
-              } catch (inner) {
+              } catch {
                 // ignore
               }
             } catch (e) {
-              // eslint-disable-next-line no-console
               console.warn('onclone color sanitize failed', e)
             }
           },

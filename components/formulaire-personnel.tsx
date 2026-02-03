@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useNotification } from '@/components/notification'
-import { Upload, Loader2, Camera, Image as ImageIcon, X, Trash2 } from 'lucide-react'
+import { Loader2, Camera, Image as ImageIcon, X, Trash2 } from 'lucide-react'
 import { creerPersonnel, modifierPersonnel, uploaderImage, supprimerPersonnel } from '@/lib/services/api'
 import { ModalSimple } from '@/components/modal-simple'
 import type { Personnel, CreerPersonnelDonnees, ModifierPersonnelDonnees, Etablissement, RolePersonnel } from '@/lib/types'
@@ -75,19 +75,20 @@ export function FormulaireMembre({
       if (reponse.succes && reponse.donnees?.url) {
         setPhotoPreview(reponse.donnees.url)
         setDonnees({ ...donnees, photo: reponse.donnees.url })
-        afficherNotification('succes' as any, 'Photo téléchargée avec succès')
+        afficherNotification('succes', 'Photo téléchargée avec succès')
       } else {
-        afficherNotification('erreur' as any, reponse.erreur || 'Erreur lors de l\'upload')
+        afficherNotification('erreur', reponse.erreur || 'Erreur lors de l\'upload')
       }
     } catch (erreur) {
       console.error('Erreur:', erreur)
-      afficherNotification('erreur' as any, 'Erreur lors de l\'upload')
+      afficherNotification('erreur', 'Erreur lors de l\'upload')
     } finally {
       setEnChargement(false)
     }
   }
 
-  async function demarrerCamera() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function traiterCamera() {
     try {
       if (typeof window === 'undefined') {
         console.error('Erreur: Code exécuté côté serveur')
@@ -123,18 +124,19 @@ export function FormulaireMembre({
       } else {
         console.error('refCamera.current est null')
       }
-    } catch (erreur: any) {
+    } catch (erreur: unknown) {
+      const err = erreur as { name?: string; message?: string }
       console.error('=== Erreur accès caméra ===:', erreur)
-      if (erreur.name === 'NotAllowedError') {
+      if (err.name === 'NotAllowedError') {
         afficherNotification('error', 'Accès à la caméra refusé. Vérifiez les permissions du navigateur')
-      } else if (erreur.name === 'NotFoundError') {
+      } else if (err.name === 'NotFoundError') {
         afficherNotification('error', 'Aucune caméra trouvée sur cet appareil')
-      } else if (erreur.name === 'NotReadableError') {
+      } else if (err.name === 'NotReadableError') {
         afficherNotification('error', 'La caméra est déjà utilisée par une autre application')
-      } else if (erreur.name === 'SecurityError') {
+      } else if (err.name === 'SecurityError') {
         afficherNotification('error', 'La caméra n\'est disponible que sur HTTPS')
       } else {
-        afficherNotification('error', 'Erreur accès caméra: ' + (erreur.message || 'Erreur inconnue'))
+        afficherNotification('error', 'Erreur accès caméra: ' + (err.message || 'Erreur inconnue'))
       }
     }
   }
@@ -411,7 +413,7 @@ export function FormulaireMembre({
               <Select
                 value={donnees.role}
                 onValueChange={(value) =>
-                  setDonnees({ ...donnees, role: value as any })
+                  setDonnees({ ...donnees, role: value as RolePersonnel })
                 }
                 disabled={enChargement}
               >

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { ChargementPage } from '@/components/chargement'
 import { FormulaireMembre } from '@/components/formulaire-personnel'
 import { recupererEtablissements } from '@/lib/services/api'
-import type { Etablissement, Personnel } from '@/lib/types'
+import type { Etablissement } from '@/lib/types'
 
 export default function PageNouveauPersonnel() {
   const router = useRouter()
@@ -49,7 +49,7 @@ export default function PageNouveauPersonnel() {
 
       <FormulaireMembre
         etablissements={etablissements}
-        onSaved={(membre: Personnel) => {
+        onSaved={() => {
           router.push('/personnel')
         }}
       />

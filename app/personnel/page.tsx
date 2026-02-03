@@ -9,7 +9,6 @@ import '@/styles/page-personnel.css'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { ChargementPage } from '@/components/chargement'
-import { ListeVide } from '@/components/liste-vide'
 import { ModalSimple } from '@/components/modal-simple'
 import { useNotification } from '@/components/notification'
 import { 

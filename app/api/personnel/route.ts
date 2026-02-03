@@ -1,6 +1,6 @@
 import { connectToDatabase } from '@/lib/services/mongodb'
 import { ObjectId } from 'mongodb'
-import type { Personnel, CreerPersonnelDonnees } from '@/lib/types'
+import type { CreerPersonnelDonnees } from '@/lib/types'
 
 /**
  * GET /api/personnel
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     const personnelCollection = db.collection('personnel')
 
     // Construire le filtre
-    const filtre: any = {}
+    const filtre: Record<string, unknown> = {}
     if (etablissementId) {
       filtre.etablissementId = new ObjectId(etablissementId)
     }
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     }
 
     // Agrégation pour enrichir les données
-    const pipeline: any[] = [
+    const pipeline: Record<string, unknown>[] = [
       { $match: filtre },
       {
         $lookup: {
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     const personnel = await personnelCollection.aggregate(pipeline).toArray()
 
     // Formater la réponse
-    const personnelFormate = personnel.map((p: any) => ({
+    const personnelFormate = personnel.map((p: Record<string, unknown>) => ({
       id: p._id?.toString(),
       ...p,
       _id: p._id,

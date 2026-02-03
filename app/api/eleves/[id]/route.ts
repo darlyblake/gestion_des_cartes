@@ -9,7 +9,7 @@ import { NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { ModifierEleveDonnees } from '@/lib/types'
-import { serializeDocument, serializeOptionalDocument, serializeReference } from '@/lib/services/serializers'
+import { serializeDocument, serializeReference } from '@/lib/services/serializers'
 
 /**
  * GET /api/eleves/[id]

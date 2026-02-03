@@ -9,9 +9,6 @@
 import '@/styles/page-eleves.css'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -20,9 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
-import { createPortal } from 'react-dom'
 import { ModalSimple } from '@/components/modal-simple'
-import { ListeVide } from '@/components/liste-vide'
 // ModalConfirmation remplacé par une modal inline pour un contrôle visuel direct
 import { useNotification } from '@/components/notification'
 import { 

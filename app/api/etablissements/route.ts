@@ -5,7 +5,6 @@
  */
 
 import { NextResponse } from 'next/server'
-import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { CreerEtablissementDonnees } from '@/lib/types'
 import { serializeDocuments, serializeDocument } from '@/lib/services/serializers'

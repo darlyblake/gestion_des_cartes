@@ -16,7 +16,7 @@ const DUREES_TTL = {
 } as const
 
 class MemoryCache {
-  private cache = new Map<string, CacheEntry<any>>()
+  private cache = new Map<string, CacheEntry<unknown>>()
 
   /**
    * Récupère une valeur du cache si elle n'a pas expiré

@@ -98,7 +98,8 @@ export function FormulaireEleve({
         setPhotoPreview(resultat)
         setPhoto(resultat)
         setErreurs(prev => {
-          const { photo: _, ...reste } = prev
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { photo, ...reste } = prev
           return reste
         })
       }

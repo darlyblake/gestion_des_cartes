@@ -43,7 +43,7 @@ async function uploadImage(
     configureCloudinary()
 
     // Créer un stream depuis le buffer
-    const result = await new Promise<any>((resolve, reject) => {
+    const result = await new Promise<{ public_id: string; secure_url: string }>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           folder,
@@ -52,7 +52,7 @@ async function uploadImage(
         },
         (error, result) => {
           if (error) reject(error)
-          else resolve(result)
+          else resolve(result as { public_id: string; secure_url: string })
         }
       )
 

@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { CreerClasseDonnees } from '@/lib/types'
-import { serializeDocument, serializeDocuments, serializeReference } from '@/lib/services/serializers'
+import { serializeDocument, serializeReference } from '@/lib/services/serializers'
 import { apiCache, cacheKeys, invalidateCacheAfterChange } from '@/lib/services/api-cache'
 
 /* =========================
@@ -26,7 +26,7 @@ export async function GET(requete: Request) {
       ? cacheKeys.CLASSES_PAR_ETABLISSEMENT(etablissementId)
       : cacheKeys.TOUTES_LES_CLASSES
 
-    const filtre: any = {}
+    const filtre: Record<string, unknown> = {}
     if (etablissementId) {
       filtre.etablissementId = new ObjectId(etablissementId)
     }

@@ -9,7 +9,6 @@ import '@/styles/navbar.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { 
   School, 
   Users, 
@@ -93,7 +92,7 @@ export function Entete() {
       {menuOuvert && (
         <>
           <div className="navbar-mobile-menu open">
-            {liensNavigation.map((lien, idx) => {
+            {liensNavigation.map((lien) => {
               const estActif = cheminActuel === lien.href || 
                 (lien.href !== '/' && cheminActuel.startsWith(lien.href))
               const Icone = lien.icone
