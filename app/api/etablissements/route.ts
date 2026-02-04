@@ -15,12 +15,23 @@ import { apiCache, cacheKeys, invalidateCacheAfterChange } from '@/lib/services/
  * Récupère la liste de tous les établissements
  * Utilise le cache en mémoire pour réduire les appels BD
  */
-export async function GET() {
+export async function GET(requete: Request) {
   try {
+    // Récupère la projection demandée via l'URL (ex: ?projection=light)
+    const searchParams = new URL(requete.url).searchParams
+    const projection = searchParams.get('projection') || 'full'
+
     const donnees = await apiCache.getOrSet(
-      cacheKeys.TOUTES_LES_ETABLISSEMENTS,
+      cacheKeys.TOUTES_LES_ETABLISSEMENTS + (projection === 'light' ? '_light' : ''),
       async () => {
         const etablissementsCollection = await getCollection('etablissements')
+        if (projection === 'light') {
+          const etablissements = await etablissementsCollection
+            .find({}, { projection: { nom: 1, logo: 1 } })
+            .toArray()
+          return serializeDocuments(etablissements)
+        }
+
         const etablissements = await etablissementsCollection.find().toArray()
         return serializeDocuments(etablissements)
       },
@@ -30,6 +41,10 @@ export async function GET() {
     return NextResponse.json({
       succes: true,
       donnees,
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60'
+      }
     })
   } catch (erreur) {
     console.error('Erreur lors de la récupération des établissements:', erreur)

@@ -7,7 +7,7 @@ import { FormulaireEleve } from '@/components/formulaire-eleve'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft } from 'lucide-react'
-import { recupererClasses, recupererEtablissements, creerEleve } from '@/lib/services/api'
+import { recupererClasses, recupererEtablissementsOptions, creerEleve } from '@/lib/services/api'
 import { useFetchCached, invalidateCache } from '@/hooks/use-fetch-cached'
 import type { CreerEleveDonnees } from '@/lib/types'
 import '@/styles/page-eleves-nouveau.css'
@@ -28,7 +28,7 @@ export default function PageNouvelEleve() {
   )
 
   const { data: etablissementsData } = useFetchCached(
-    () => recupererEtablissements(),
+    () => recupererEtablissementsOptions({ projection: 'light' }),
     'etablissements_list',
     5 * 60 * 1000
   )

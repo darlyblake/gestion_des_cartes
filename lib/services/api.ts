@@ -77,6 +77,21 @@ export async function recupererEtablissements(): Promise<ReponseApi<Etablissemen
 }
 
 /**
+ * Récupère les établissements avec options (projection, pagination)
+ */
+export async function recupererEtablissementsOptions(
+  options?: { projection?: 'light' | 'full'; page?: number; limit?: number }
+): Promise<ReponseApi<Etablissement[]>> {
+  const params = new URLSearchParams()
+  if (options?.projection) params.append('projection', options.projection)
+  if (options?.page) params.append('page', String(options.page))
+  if (options?.limit) params.append('limit', String(options.limit))
+
+  const query = params.toString() ? `?${params.toString()}` : ''
+  return requeteFetch<Etablissement[]>(`/etablissements${query}`)
+}
+
+/**
  * Récupère un établissement par son ID
  * @param id - ID de l'établissement
  */

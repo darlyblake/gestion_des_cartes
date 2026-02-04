@@ -25,7 +25,7 @@ import { Download, Printer, CreditCard, RefreshCw, FileText, Users, IdCard } fro
 import {
   recupererEleves,
   recupererClasses,
-  recupererEtablissements,
+  recupererEtablissementsOptions,
   recupererPersonnel,
 } from '@/lib/services/api'
 import {
@@ -115,7 +115,7 @@ function ContenuPageCartes() {
         const [repEleves, repClasses, repEtab, repPersonnel] = await Promise.all([
           recupererEleves(),
           recupererClasses(),
-          recupererEtablissements(),
+          recupererEtablissementsOptions({ projection: 'light' }),
           recupererPersonnel(),
         ])
 

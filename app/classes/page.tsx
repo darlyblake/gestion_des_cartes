@@ -27,7 +27,7 @@ import {
   Users,
   School,
 } from 'lucide-react'
-import { recupererClasses, recupererEtablissements, supprimerClasse } from '@/lib/services/api'
+import { recupererClasses, recupererEtablissementsOptions, supprimerClasse } from '@/lib/services/api'
 import type { Classe, Etablissement } from '@/lib/types'
 
 /**
@@ -60,7 +60,7 @@ export default function PageClasses() {
       try {
         const [repClasses, repEtab] = await Promise.all([
           recupererClasses(),
-          recupererEtablissements(),
+          recupererEtablissementsOptions({ projection: 'light' }),
         ])
 
         if (repClasses.succes && repClasses.donnees) {

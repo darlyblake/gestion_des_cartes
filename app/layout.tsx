@@ -8,9 +8,9 @@ import '../styles/buttons.css'
 import '../styles/forms.css'
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
-import { Analytics } from '@vercel/analytics/next'
 import { Entete } from '@/components/entete'
 import { FournisseurNotification } from '@/components/notification'
+import { AnalyticsClient } from '@/components/analytics-client'
 
 // Fonts are intentionally not loaded from Google during CI/offline validation
 
@@ -70,7 +70,7 @@ export default function RootLayout({
             </footer>
           </div>
         </FournisseurNotification>
-        <Analytics />
+        <AnalyticsClient />
       </body>
     </html>
   )

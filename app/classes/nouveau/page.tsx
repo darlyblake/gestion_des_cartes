@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { recupererEtablissements, creerClasse } from '@/lib/services/api'
+import { recupererEtablissementsOptions, creerClasse } from '@/lib/services/api'
 import type { Etablissement, CreerClasseDonnees } from '@/lib/types'
 
 /**
@@ -81,7 +81,7 @@ export default function PageNouvelleClasse() {
   useEffect(() => {
     async function chargerEtablissements() {
       try {
-        const reponse = await recupererEtablissements()
+        const reponse = await recupererEtablissementsOptions({ projection: 'light' })
         if (reponse.succes && reponse.donnees) {
           setEtablissements(reponse.donnees)
         }

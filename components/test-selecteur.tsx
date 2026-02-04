@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { recupererEtablissements } from '@/lib/services/api'
+import { recupererEtablissementsOptions } from '@/lib/services/api'
 import type { Etablissement } from '@/lib/types'
 
 export function TestSelecteur() {
@@ -20,7 +20,7 @@ export function TestSelecteur() {
   const [selectedId, setSelectedId] = useState('')
 
   useEffect(() => {
-    recupererEtablissements().then((res) => {
+    recupererEtablissementsOptions({ projection: 'light' }).then((res) => {
       if (res.succes && res.donnees) {
         setEtablissements(res.donnees)
         if (res.donnees.length > 0) {
