@@ -11,7 +11,7 @@ import { recupererEtablissements, recupererClasse, modifierClasse } from '@/lib/
 import type { Etablissement, ModifierClasseDonnees } from '@/lib/types'
 
 const NIVEAUX = [
-  '6ème','5ème','4ème','3ème','Seconde','Première','Terminale','Licence 1','Licence 2','Licence 3','Master 1','Master 2'
+  '5ème année','6ème','5ème','4ème','3ème','Seconde','Première','Terminale','Licence 1','Licence 2','Licence 3','Master 1','Master 2'
 ]
 
 export default function PageModifierClasse() {

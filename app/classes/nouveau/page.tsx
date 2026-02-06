@@ -20,6 +20,7 @@ import type { Etablissement, CreerClasseDonnees } from '@/lib/types'
  * Niveaux de classe disponibles
  */
 const NIVEAUX = [
+  '5ème année',
   '6ème',
   '5ème',
   '4ème',
@@ -199,7 +200,7 @@ export default function PageNouvelleClasse() {
                         id="etablissement"
                         className={`class-creation-select-trigger ${erreurs.etablissementId ? 'error' : ''}`}
                         onClick={() => setSelectOuvert('etablissement')}
-                        aria-expanded={selectOuvert === 'etablissement'}
+                        aria-expanded={(selectOuvert === 'etablissement').toString()}
                         aria-haspopup="listbox"
                       >
                         <span>
@@ -280,7 +281,7 @@ export default function PageNouvelleClasse() {
                           id="niveau"
                           className={`class-creation-select-trigger ${erreurs.niveau ? 'error' : ''}`}
                           onClick={() => setSelectOuvert('niveau')}
-                          aria-expanded={selectOuvert === 'niveau'}
+                          aria-expanded={(selectOuvert === 'niveau').toString()}
                           aria-haspopup="listbox"
                         >
                           <span>{niveau || 'Sélectionner un niveau'}</span>

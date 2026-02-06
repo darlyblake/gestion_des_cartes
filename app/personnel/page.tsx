@@ -40,6 +40,7 @@ function getRoleLabel(role: string): string {
     gestionnaire: 'Gestionnaire',
     infirmier: 'Infirmier',
     bibliothecaire: 'Bibliothécaire',
+    stagiaire: 'Stagiaire',
     autre: 'Autre',
   }
   return labels[role] || role

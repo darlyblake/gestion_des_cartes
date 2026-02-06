@@ -38,6 +38,23 @@ export async function POST(requete: Request) {
       )
     }
 
+    // Validation des variables d'environnement
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      console.error('❌ Configuration Cloudinary manquante:', {
+        cloudName: !!cloudName,
+        apiKey: !!apiKey,
+        apiSecret: !!apiSecret,
+      })
+      return NextResponse.json(
+        { succes: false, erreur: 'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement.' },
+        { status: 500 }
+      )
+    }
+
     // Convertir le fichier en buffer
     const bytes = await fichier.arrayBuffer()
     const buffer = Buffer.from(bytes)
@@ -54,9 +71,17 @@ export async function POST(requete: Request) {
       message: 'Image uploadée avec succès sur Cloudinary',
     })
   } catch (erreur) {
-    console.error('Erreur lors de l\'upload:', erreur)
+    const messageErreur = erreur instanceof Error ? erreur.message : 'Erreur inconnue'
+    console.error('❌ Erreur lors de l\'upload:', {
+      message: messageErreur,
+      stack: erreur instanceof Error ? erreur.stack : undefined,
+    })
     return NextResponse.json(
-      { succes: false, erreur: 'Erreur lors de l\'upload de l\'image' },
+      { 
+        succes: false, 
+        erreur: 'Erreur lors de l\'upload de l\'image',
+        detail: process.env.NODE_ENV === 'development' ? messageErreur : undefined,
+      },
       { status: 500 }
     )
   }
