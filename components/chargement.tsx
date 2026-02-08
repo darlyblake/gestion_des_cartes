@@ -1,64 +1,51 @@
 /**
- * Composant d'indicateur de chargement
- * Affiche un spinner animé pendant les chargements
+ * Loader moderne – Cartes scolaires & professionnelles
+ * Animation 100% CSS, design institutionnel fluide
  */
+
+'use client'
 
 import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
 
-/**
- * Props du composant Chargement
- */
 interface ChargementProps {
-  /** Taille du spinner */
-  taille?: 'petit' | 'moyen' | 'grand'
-  /** Message à afficher */
   message?: string
-  /** Classes CSS additionnelles */
-  className?: string
-  /** Afficher en plein écran */
   pleinEcran?: boolean
+  className?: string
 }
 
-/**
- * Composant Chargement avec spinner
- */
-export function Chargement({ 
-  taille = 'moyen', 
-  message,
-  className,
+export function Chargement({
+  message = 'Chargement en cours',
   pleinEcran = false,
+  className,
 }: ChargementProps) {
-  // Tailles du spinner
-  const taillesSpinner = {
-    petit: 'h-4 w-4',
-    moyen: 'h-8 w-8',
-    grand: 'h-12 w-12',
-  }
-
   const contenu = (
-    <div className={cn(
-      'flex flex-col items-center justify-center gap-3',
-      className
-    )}>
-      <Loader2 
-        className={cn(
-          'animate-spin text-primary',
-          taillesSpinner[taille]
-        )} 
-      />
-      {message && (
-        <p className="text-sm text-muted-foreground animate-pulse">
-          {message}
-        </p>
-      )}
+    <div className={cn('loader-container', className)}>
+      <div className="loader-card-wrapper">
+        <div className="loader-glow" />
+        <div className="loader-card">
+          <span className="loader-avatar" />
+          <span className="loader-line short" />
+          <span className="loader-line" />
+        </div>
+        <span className="loader-badge" />
+      </div>
+
+      <div className="loader-text">
+        <span>{message}</span>
+        <span className="dots">
+          <i>.</i><i>.</i><i>.</i>
+        </span>
+      </div>
+
+      <p className="loader-sub">
+        Vérification et sécurisation des données
+      </p>
     </div>
   )
 
-  // Affichage plein écran
   if (pleinEcran) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="loader-overlay">
         {contenu}
       </div>
     )
@@ -68,12 +55,16 @@ export function Chargement({
 }
 
 /**
- * Composant de chargement pour une page entière
+ * Chargement plein écran pour les pages
  */
-export function ChargementPage({ message = 'Chargement...' }: { message?: string }) {
+export function ChargementPage({
+  message = 'Chargement de la plateforme',
+}: {
+  message?: string
+}) {
   return (
-    <div className="flex h-[50vh] w-full items-center justify-center">
-      <Chargement taille="grand" message={message} />
+    <div className="loader-page">
+      <Chargement message={message} />
     </div>
   )
 }

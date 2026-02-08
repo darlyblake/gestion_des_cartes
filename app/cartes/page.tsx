@@ -23,10 +23,10 @@ import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { Download, Printer, CreditCard, RefreshCw, FileText, Users, IdCard } from 'lucide-react'
 import {
-  recupererEleves,
-  recupererClasses,
-  recupererEtablissementsOptions,
-  recupererPersonnel,
+  recupererElevesList,
+  recupererClassesList,
+  recupererEtablissementsList,
+  recupererPersonnelList,
 } from '@/lib/services/api'
 import {
   CarteClassique,
@@ -113,27 +113,16 @@ function ContenuPageCartes() {
     async function chargerDonnees() {
       try {
         const [repEleves, repClasses, repEtab, repPersonnel] = await Promise.all([
-          recupererEleves(),
-          recupererClasses(),
-          recupererEtablissementsOptions({ projection: 'light' }),
-          recupererPersonnel(),
+          recupererElevesList(),
+          recupererClassesList(),
+          recupererEtablissementsList({ projection: 'light' }),
+          recupererPersonnelList(),
         ])
 
-        if (repEleves.succes && repEleves.donnees) {
-          setEleves(repEleves.donnees as EleveComplet[])
-        }
-
-        if (repClasses.succes && repClasses.donnees) {
-          setClasses(repClasses.donnees)
-        }
-
-        if (repEtab.succes && repEtab.donnees) {
-          setEtablissements(repEtab.donnees)
-        }
-
-        if (repPersonnel.succes && repPersonnel.donnees) {
-          setPersonnels(repPersonnel.donnees)
-        }
+        setEleves(repEleves as EleveComplet[])
+        setClasses(repClasses)
+        setEtablissements(repEtab)
+        setPersonnels(repPersonnel)
       } catch (erreur) {
         console.error('Erreur:', erreur)
         afficherNotification('erreur', 'Erreur lors du chargement des données')

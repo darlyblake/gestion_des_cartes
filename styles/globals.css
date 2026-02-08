@@ -931,6 +931,166 @@
     }
   }
 
+  /* ===== LOADER MODERNE – CARTES SCOLAIRES ===== */
+
+  .loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .loader-page {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  /* --- Carte animée --- */
+  .loader-card-wrapper {
+    position: relative;
+    width: 96px;
+    height: 64px;
+  }
+
+  .loader-glow {
+    position: absolute;
+    inset: -20px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.35), transparent 60%);
+    filter: blur(12px);
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  .loader-card {
+    position: relative;
+    width: 96px;
+    height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    animation: floatCard 2.2s ease-in-out infinite;
+  }
+
+  .loader-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .loader-line {
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .loader-line.short {
+    width: 60%;
+  }
+
+  /* --- Badge sécurité --- */
+  .loader-badge {
+    position: absolute;
+    bottom: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    animation: bounceBadge 1.4s infinite;
+  }
+
+  /* --- Texte --- */
+  .loader-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-foreground);
+  }
+
+  .loader-sub {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  /* --- Points animés --- */
+  .dots i {
+    font-style: normal;
+    animation: blink 1.4s infinite both;
+  }
+
+  .dots i:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .dots i:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  /* ===== KEYFRAMES ANIMATIONS ===== */
+
+  @keyframes floatCard {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bounceBadge {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes blink {
+    0% {
+      opacity: 0.2;
+    }
+    20% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.2;
+    }
+  }
+
   /* ===== MEDIA QUERIES GLOBALES ===== */
   @media (prefers-reduced-motion: reduce) {
     *,

@@ -157,6 +157,7 @@ function CarteRecto({
           <img
             src={eleve.photo || '/placeholder.svg?height=62&width=50'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+            loading="lazy"
             style={{
               width: '100%',
               height: '100%',

@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import { recupererEtablissementsOptions, creerClasse } from '@/lib/services/api'
+import { recupererEtablissementsList, creerClasse } from '@/lib/services/api'
 import type { Etablissement, CreerClasseDonnees } from '@/lib/types'
 
 /**
@@ -82,10 +82,8 @@ export default function PageNouvelleClasse() {
   useEffect(() => {
     async function chargerEtablissements() {
       try {
-        const reponse = await recupererEtablissementsOptions({ projection: 'light' })
-        if (reponse.succes && reponse.donnees) {
-          setEtablissements(reponse.donnees)
-        }
+        const etablissements = await recupererEtablissementsList({ projection: 'light' })
+        setEtablissements(etablissements)
       } catch (erreur) {
         console.error('Erreur:', erreur)
         afficherNotification('erreur', 'Erreur lors du chargement des établissements')
@@ -200,7 +198,7 @@ export default function PageNouvelleClasse() {
                         id="etablissement"
                         className={`class-creation-select-trigger ${erreurs.etablissementId ? 'error' : ''}`}
                         onClick={() => setSelectOuvert('etablissement')}
-                        aria-expanded={(selectOuvert === 'etablissement').toString()}
+                        aria-expanded={selectOuvert === 'etablissement'}
                         aria-haspopup="listbox"
                       >
                         <span>
@@ -281,7 +279,7 @@ export default function PageNouvelleClasse() {
                           id="niveau"
                           className={`class-creation-select-trigger ${erreurs.niveau ? 'error' : ''}`}
                           onClick={() => setSelectOuvert('niveau')}
-                          aria-expanded={(selectOuvert === 'niveau').toString()}
+                          aria-expanded={selectOuvert === 'niveau'}
                           aria-haspopup="listbox"
                         >
                           <span>{niveau || 'Sélectionner un niveau'}</span>

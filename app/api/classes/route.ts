@@ -1,7 +1,17 @@
 /**
  * Route API pour la gestion des classes
- * GET  - Récupère toutes les classes (filtre optionnel par établissement, CACHÉE)
+ * Support de la PAGINATION pour optimiser les performances.
+ * 
+ * GET  - Récupère toutes les classes (filtre optionnel par établissement, PAGINÉ)
  * POST - Crée une nouvelle classe
+ * 
+ * PARAMÈTRES DE PAGINATION :
+ * - page (optionnel, défaut: 1) : Numéro de page
+ * - limit (optionnel, défaut: 50) : Nombre d'éléments par page (max: 100)
+ * - etablissementId (optionnel) : Filtrer par établissement
+ * - search (optionnel) : Recherche par nom de classe
+ * - sortBy (optionnel) : Champ de tri
+ * - sortOrder (optionnel) : Ordre de tri (asc/desc)
  */
 
 import { NextResponse } from 'next/server'
@@ -10,30 +20,76 @@ import { getCollection } from '@/lib/services/mongodb'
 import type { CreerClasseDonnees } from '@/lib/types'
 import { serializeDocument, serializeReference } from '@/lib/services/serializers'
 import { apiCache, cacheKeys, invalidateCacheAfterChange } from '@/lib/services/api-cache'
+import { classesQuerySchema, generatePaginationMeta } from '@/lib/services/validation'
+import { checkRateLimit, checkSensitiveRateLimit } from '@/lib/services/rate-limiter'
 
 /* =========================
    GET /api/classes
 ========================= */
 export async function GET(requete: Request) {
   try {
+    // Rate limiting pour les requêtes GET
+    const rateLimitError = await checkRateLimit(requete)
+    if (rateLimitError) return rateLimitError
+
     const { searchParams } = new URL(requete.url)
-    const etablissementId = searchParams.get('etablissementId')
+    
+    // Valider les paramètres avec Zod
+    const paramsResult = classesQuerySchema.safeParse({
+      page: searchParams.get('page'),
+      limit: searchParams.get('limit'),
+      etablissementId: searchParams.get('etablissementId'),
+      search: searchParams.get('search'),
+      sortBy: searchParams.get('sortBy'),
+      sortOrder: searchParams.get('sortOrder'),
+    })
+
+    if (!paramsResult.success) {
+      return NextResponse.json(
+        { 
+          succes: false, 
+          erreur: 'Paramètres invalides',
+          details: paramsResult.error.flatten().fieldErrors
+        },
+        { status: 400 }
+      )
+    }
+
+    const { page, limit, etablissementId, search, sortBy, sortOrder } = paramsResult.data
 
     const classesCollection = await getCollection('classes')
 
-    // Générer la clé de cache appropriée
-    const cacheKey = etablissementId
-      ? cacheKeys.CLASSES_PAR_ETABLISSEMENT(etablissementId)
-      : cacheKeys.TOUTES_LES_CLASSES
+    // Générer la clé de cache appropriée (incluant les paramètres de pagination)
+    const cacheKey = cacheKeys.CLASSES_PAR_ETABLISSEMENT(
+      etablissementId || 'all'
+    ) + `:p${page}:l${limit}:s${search || ''}`
 
+    // Construire le filtre MongoDB
     const filtre: Record<string, unknown> = {}
     if (etablissementId) {
       filtre.etablissementId = new ObjectId(etablissementId)
     }
 
+    // Ajouter la recherche textuelle sur nom et niveau
+    if (search) {
+      // Utiliser l'index text pour une recherche plus rapide
+      filtre.$text = { $search: search }
+    }
+
+    // Calculer le skip pour la pagination
+    const skip = (page - 1) * limit
+
+    // Déterminer le champ de tri
+    const sortField = sortBy || 'creeLe'
+    const sortDirection = sortOrder === 'asc' ? 1 : -1
+
     const donnees = await apiCache.getOrSet(
       cacheKey,
       async () => {
+        // Compter le total pour la pagination
+        const total = await classesCollection.countDocuments(filtre)
+
+        // Récupérer les classes paginées
         const result = await classesCollection
           .aggregate([
             { $match: filtre },
@@ -69,10 +125,13 @@ export async function GET(requete: Request) {
                 eleves: 0,
               },
             },
+            { $sort: { [sortField]: sortDirection } },
+            { $skip: skip },
+            { $limit: limit },
           ])
           .toArray()
 
-        return result.map((classe) => {
+        return { classes: result.map((classe) => {
           const { etablissement, ...rest } = classe
           return {
             ...serializeDocument(rest),
@@ -80,15 +139,23 @@ export async function GET(requete: Request) {
             etablissementId: serializeReference(rest.etablissementId),
             nombreEleves: classe.nombreEleves || 0,
           }
-        })
+        }), total }
       },
       3 * 60 * 1000 // 3 minutes TTL
     )
 
+    // Générer les métadonnées de pagination
+    const meta = generatePaginationMeta(donnees.total, page, limit)
+
     return NextResponse.json(
       {
         succes: true,
-        donnees,
+        donnees: donnees.classes,
+        meta: {
+          ...meta,
+          filtreEtablissement: etablissementId || null,
+          search: search || null,
+        },
       },
       {
         headers: {
@@ -110,6 +177,10 @@ export async function GET(requete: Request) {
 ========================= */
 export async function POST(requete: Request) {
   try {
+    // Rate limiting stricte pour les créations
+    const rateLimitError = await checkSensitiveRateLimit(requete)
+    if (rateLimitError) return rateLimitError
+
     const donnees = (await requete.json()) as CreerClasseDonnees
 
     if (!donnees.nom || !donnees.niveau || !donnees.etablissementId) {

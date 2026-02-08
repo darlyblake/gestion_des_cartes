@@ -1,39 +1,95 @@
-import { connectToDatabase } from '@/lib/services/mongodb'
+/**
+ * Route API pour la gestion du personnel
+ * Support de la PAGINATION pour optimiser les performances.
+ * 
+ * GET - Récupère tout le personnel (PAGINÉ, FILTRÉ)
+ * POST - Crée un nouveau membre du personnel
+ * 
+ * PARAMÈTRES DE PAGINATION :
+ * - page (optionnel, défaut: 1) : Numéro de page
+ * - limit (optionnel, défaut: 50) : Nombre d'éléments par page (max: 100)
+ * - etablissementId (optionnel) : Filtrer par établissement
+ * - role (optionnel) : Filtrer par rôle
+ * - search (optionnel) : Recherche par nom, prénom ou fonction
+ * - sortBy (optionnel) : Champ de tri
+ * - sortOrder (optionnel) : Ordre de tri (asc/desc)
+ */
+
+import { NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
+import { getCollection } from '@/lib/services/mongodb'
 import type { CreerPersonnelDonnees } from '@/lib/types'
+import { serializeDocument, serializeReference } from '@/lib/services/serializers'
+import { personnelQuerySchema, generatePaginationMeta } from '@/lib/services/validation'
+import { checkRateLimit, checkSensitiveRateLimit } from '@/lib/services/rate-limiter'
 
 /**
  * GET /api/personnel
- * Récupère la liste de tout le personnel avec filtres optionnels
+ * Récupère la liste du personnel avec pagination, filtres et recherche
  */
 export async function GET(request: Request) {
   try {
+    // Rate limiting pour les requêtes GET
+    const rateLimitError = await checkRateLimit(request)
+    if (rateLimitError) return rateLimitError
+
     const { searchParams } = new URL(request.url)
-    const etablissementId = searchParams.get('etablissementId')
-    const role = searchParams.get('role')
-    const recherche = searchParams.get('recherche')
+    
+    // Valider les paramètres avec Zod
+    const paramsResult = personnelQuerySchema.safeParse({
+      page: searchParams.get('page'),
+      limit: searchParams.get('limit'),
+      etablissementId: searchParams.get('etablissementId'),
+      role: searchParams.get('role'),
+      search: searchParams.get('search'),
+      sortBy: searchParams.get('sortBy'),
+      sortOrder: searchParams.get('sortOrder'),
+    })
 
-    const { db } = await connectToDatabase()
-    const personnelCollection = db.collection('personnel')
+    if (!paramsResult.success) {
+      return NextResponse.json(
+        { 
+          succes: false, 
+          erreur: 'Paramètres invalides',
+          details: paramsResult.error.flatten().fieldErrors
+        },
+        { status: 400 }
+      )
+    }
 
-    // Construire le filtre
+    const { page, limit, etablissementId, role, search, sortBy, sortOrder } = paramsResult.data
+
+    const personnelCollection = await getCollection('personnel')
+
+    // Construire le filtre MongoDB
     const filtre: Record<string, unknown> = {}
+    
     if (etablissementId) {
       filtre.etablissementId = new ObjectId(etablissementId)
     }
+    
     if (role) {
       filtre.role = role
     }
-    if (recherche) {
-      filtre.$or = [
-        { nom: { $regex: recherche, $options: 'i' } },
-        { prenom: { $regex: recherche, $options: 'i' } },
-        { fonction: { $regex: recherche, $options: 'i' } },
-      ]
+
+    // Ajouter la recherche textuelle sur nom, prénom et fonction
+    if (search) {
+      // Utiliser l'index text pour une recherche plus rapide
+      filtre.$text = { $search: search }
     }
 
-    // Agrégation pour enrichir les données
-    const pipeline: Record<string, unknown>[] = [
+    // Calculer le skip pour la pagination
+    const skip = (page - 1) * limit
+
+    // Déterminer le champ de tri
+    const sortField = sortBy || 'creeLe'
+    const sortDirection = sortOrder === 'asc' ? 1 : -1
+
+    // Compter le total
+    const total = await personnelCollection.countDocuments(filtre)
+
+    // Agrégation pour enrichir les données avec pagination
+    const pipeline = [
       { $match: filtre },
       {
         $lookup: {
@@ -49,25 +105,39 @@ export async function GET(request: Request) {
           preserveNullAndEmptyArrays: true,
         },
       },
-      { $sort: { creeLe: -1 } },
+      { $sort: { [sortField]: sortDirection } },
+      { $skip: skip },
+      { $limit: limit },
     ]
 
     const personnel = await personnelCollection.aggregate(pipeline).toArray()
 
     // Formater la réponse
-    const personnelFormate = personnel.map((p: Record<string, unknown>) => ({
-      id: p._id?.toString(),
-      ...p,
-      _id: p._id,
-    }))
+    const personnelFormate = personnel.map((p) => {
+      const { etablissement, ...rest } = p
+      return {
+        ...serializeDocument(rest),
+        etablissementId: serializeReference(rest.etablissementId),
+        etablissement: etablissement ? serializeDocument(etablissement) : undefined,
+      }
+    })
 
-    return Response.json({
+    // Générer les métadonnées de pagination
+    const meta = generatePaginationMeta(total, page, limit)
+
+    return NextResponse.json({
       succes: true,
       donnees: personnelFormate,
+      meta: {
+        ...meta,
+        filtreEtablissement: etablissementId || null,
+        filtreRole: role || null,
+        search: search || null,
+      },
     })
   } catch (erreur) {
     console.error('Erreur lors de la récupération du personnel:', erreur)
-    return Response.json(
+    return NextResponse.json(
       {
         succes: false,
         erreur: 'Erreur lors de la récupération du personnel',
@@ -83,11 +153,15 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
+    // Rate limiting stricte pour les créations
+    const rateLimitError = await checkSensitiveRateLimit(request)
+    if (rateLimitError) return rateLimitError
+
     const data: CreerPersonnelDonnees = await request.json()
 
-    // Validation
+    // Validation basique
     if (!data.nom || !data.prenom || !data.role || !data.fonction || !data.etablissementId) {
-      return Response.json(
+      return NextResponse.json(
         {
           succes: false,
           erreur: 'Données manquantes (nom, prenom, role, fonction, etablissementId)',
@@ -96,8 +170,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { db } = await connectToDatabase()
-    const personnelCollection = db.collection('personnel')
+    const personnelCollection = await getCollection('personnel')
 
     // Créer le nouveau membre du personnel
     const nouveauPersonnel = {
@@ -115,7 +188,7 @@ export async function POST(request: Request) {
 
     const resultat = await personnelCollection.insertOne(nouveauPersonnel)
 
-    return Response.json(
+    return NextResponse.json(
       {
         succes: true,
         donnees: {
@@ -129,7 +202,7 @@ export async function POST(request: Request) {
     )
   } catch (erreur) {
     console.error('Erreur lors de la création du personnel:', erreur)
-    return Response.json(
+    return NextResponse.json(
       {
         succes: false,
         erreur: 'Erreur lors de la création du personnel',

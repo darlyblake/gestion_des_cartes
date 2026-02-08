@@ -159,6 +159,7 @@ export function CarteModerneRectoVerso({
             <img
               src={eleve.photo || '/placeholder.svg?height=89&width=69'}
               alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+              loading="lazy"
               style={{
                 width: '100%',
                 height: '100%',

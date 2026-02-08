@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChargementPage } from '@/components/chargement'
 import { FormulaireMembre } from '@/components/formulaire-personnel'
-import { recupererEtablissementsOptions } from '@/lib/services/api'
+import { recupererEtablissementsList } from '@/lib/services/api'
 import type { Etablissement } from '@/lib/types'
 
 export default function PageNouveauPersonnel() {
@@ -23,10 +23,8 @@ export default function PageNouveauPersonnel() {
 
   async function chargerEtablissements() {
     try {
-      const reponse = await recupererEtablissementsOptions({ projection: 'light' })
-      if (reponse.succes && reponse.donnees) {
-        setEtablissements(reponse.donnees)
-      }
+      const etablissements = await recupererEtablissementsList({ projection: 'light' })
+      setEtablissements(etablissements)
     } catch (erreur) {
       console.error('Erreur:', erreur)
     } finally {

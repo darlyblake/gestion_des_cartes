@@ -1,6 +1,7 @@
 /**
  * Service API pour communiquer avec le backend
  * Gère toutes les requêtes HTTP vers les routes API
+ * Support de la PAGINATION pour optimiser les performances
  */
 
 import type {
@@ -20,10 +21,38 @@ import type {
   StatistiquesDashboard,
   OptionsGenererCarte,
   CarteGeneree,
+  ReponsePaginee,
 } from '../types'
 
 // URL de base de l'API
 const URL_API = '/api'
+
+// ==================== TYPES DE PAGINATION ====================
+
+/**
+ * Métadonnées de pagination retournées par l'API
+ */
+export interface PaginationMeta {
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
+/**
+ * Réponse paginée générique (avec signature d'index pour compatibilité avec meta)
+ */
+export interface ReponsePaginated<T> {
+  succes: boolean
+  donnees?: T
+  erreur?: string
+  message?: string
+  meta?: PaginationMeta & Record<string, unknown>
+}
+
+// ==================== FONCTIONS UTILITAIRES ====================
 
 /**
  * Fonction utilitaire pour effectuer des requêtes fetch
@@ -67,28 +96,83 @@ async function requeteFetch<T>(
   }
 }
 
+/**
+ * Fonction utilitaire pour effectuer des requêtes fetch paginées
+ */
+async function requeteFetchPaginee<T>(
+  url: string,
+  options?: RequestInit
+): Promise<ReponsePaginated<T>> {
+  try {
+    const reponse = await fetch(`${URL_API}${url}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    })
+
+    const donnees = await reponse.json()
+
+    if (!reponse.ok) {
+      return {
+        succes: false,
+        erreur: donnees.erreur || 'Une erreur est survenue',
+      }
+    }
+
+    return {
+      succes: true,
+      donnees: donnees.donnees || [],
+      meta: donnees.meta,
+    }
+  } catch (erreur) {
+    console.error('Erreur API paginée:', erreur)
+    const message = erreur instanceof Error ? erreur.message : String(erreur)
+    return {
+      succes: false,
+      erreur: `Erreur de connexion au serveur: ${message}`,
+    }
+  }
+}
+
 // ==================== ÉTABLISSEMENTS ====================
 
 /**
- * Récupère tous les établissements
+ * Options de récupération paginée des établissements
  */
-export async function recupererEtablissements(): Promise<ReponseApi<Etablissement[]>> {
-  return requeteFetch<Etablissement[]>('/etablissements')
+interface OptionsEtablissements {
+  /** Projection light (nom, logo) ou full (tous les champs) */
+  projection?: 'light' | 'full'
+  /** Page pour la pagination (1 par défaut) */
+  page?: number
+  /** Limite de résultats par page (défaut: 50, max: 100) */
+  limit?: number
+  /** Recherche textuelle sur nom et adresse */
+  search?: string
+  /** Champ de tri */
+  sortBy?: string
+  /** Ordre de tri (asc ou desc) */
+  sortOrder?: 'asc' | 'desc'
 }
 
 /**
- * Récupère les établissements avec options (projection, pagination)
+ * Récupère tous les établissements avec pagination
  */
-export async function recupererEtablissementsOptions(
-  options?: { projection?: 'light' | 'full'; page?: number; limit?: number }
-): Promise<ReponseApi<Etablissement[]>> {
+export async function recupererEtablissements(
+  options?: OptionsEtablissements
+): Promise<ReponsePaginated<Etablissement[]>> {
   const params = new URLSearchParams()
+  
   if (options?.projection) params.append('projection', options.projection)
   if (options?.page) params.append('page', String(options.page))
   if (options?.limit) params.append('limit', String(options.limit))
+  if (options?.search) params.append('search', options.search)
+  if (options?.sortBy) params.append('sortBy', options.sortBy)
+  if (options?.sortOrder) params.append('sortOrder', options.sortOrder)
 
   const query = params.toString() ? `?${params.toString()}` : ''
-  return requeteFetch<Etablissement[]>(`/etablissements${query}`)
+  return requeteFetchPaginee<Etablissement[]>(`/etablissements${query}`)
 }
 
 /**
@@ -140,16 +224,40 @@ export async function supprimerEtablissement(id: string): Promise<ReponseApi<voi
 // ==================== CLASSES ====================
 
 /**
- * Récupère toutes les classes
- * @param etablissementId - Optionnel, filtre par établissement
+ * Options de récupération paginée des classes
+ */
+interface OptionsClasses {
+  /** Filtre par ID d'établissement */
+  etablissementId?: string
+  /** Page pour la pagination (1 par défaut) */
+  page?: number
+  /** Limite de résultats par page (défaut: 50, max: 100) */
+  limit?: number
+  /** Recherche textuelle sur nom et niveau */
+  search?: string
+  /** Champ de tri */
+  sortBy?: string
+  /** Ordre de tri (asc ou desc) */
+  sortOrder?: 'asc' | 'desc'
+}
+
+/**
+ * Récupère toutes les classes avec pagination
  */
 export async function recupererClasses(
-  etablissementId?: string
-): Promise<ReponseApi<Classe[]>> {
-  const url = etablissementId
-    ? `/classes?etablissementId=${etablissementId}`
-    : '/classes'
-  return requeteFetch<Classe[]>(url)
+  options?: OptionsClasses
+): Promise<ReponsePaginated<Classe[]>> {
+  const params = new URLSearchParams()
+  
+  if (options?.etablissementId) params.append('etablissementId', options.etablissementId)
+  if (options?.page) params.append('page', String(options.page))
+  if (options?.limit) params.append('limit', String(options.limit))
+  if (options?.search) params.append('search', options.search)
+  if (options?.sortBy) params.append('sortBy', options.sortBy)
+  if (options?.sortOrder) params.append('sortOrder', options.sortOrder)
+
+  const query = params.toString() ? `?${params.toString()}` : ''
+  return requeteFetchPaginee<Classe[]>(`/classes${query}`)
 }
 
 /**
@@ -201,79 +309,89 @@ export async function supprimerClasse(id: string): Promise<ReponseApi<void>> {
 // ==================== ÉLÈVES ====================
 
 /**
- * Options de filtrage pour récupérer les élèves
+ * Options de filtrage et pagination pour récupérer les élèves
  */
-interface OptionsFiltreEleves {
+interface OptionsEleves {
   /** Filtre par ID de classe */
   classeId?: string
   /** Filtre par ID d'établissement */
   etablissementId?: string
-  /** Recherche textuelle sur nom/prénom/matricule */
-  recherche?: string
+  /** Recherche textuelle sur nom et prénom */
+  search?: string
   /** Page pour la pagination (1 par défaut) */
   page?: number
-  /** Limite de résultats par page */
+  /** Limite de résultats par page (défaut: 50, max: 100) */
   limit?: number
   /** Projection optimisée (light = champs essentiels) */
   projection?: 'light' | 'full'
+  /** Champ de tri */
+  sortBy?: string
+  /** Ordre de tri (asc ou desc) */
+  sortOrder?: 'asc' | 'desc'
 }
 
 /**
- * Récupère tous les élèves avec filtres optionnels
+ * Récupère tous les élèves avec filtres et pagination
  * 
  * CONNEXION BACKEND :
  * Appelle GET /api/eleves avec les paramètres de filtre
  * 
  * EXEMPLES D'UTILISATION :
  * ```typescript
- * // Tous les élèves
- * const eleves = await recupererEleves()
+ * // Tous les élèves (paginé, 50 par page)
+ * const result = await recupererEleves()
  * 
- * // Élèves d'une classe spécifique
- * const eleves = await recupererEleves({ classeId: 'xxx' })
+ * // Élèves d'une classe spécifique (paginé)
+ * const result = await recupererEleves({ classeId: 'xxx', page: 1, limit: 25 })
  * 
- * // Élèves d'un établissement
- * const eleves = await recupererEleves({ etablissementId: 'yyy' })
- * 
- * // Filtre combiné
- * const eleves = await recupererEleves({ classeId: 'xxx', etablissementId: 'yyy' })
+ * // Recherche avec pagination
+ * const result = await recupererEleves({ search: 'dupont', page: 1, limit: 50 })
  * ```
  * 
- * @param filtres - Options de filtrage optionnelles
+ * @param options - Options de filtrage et pagination
+ * @returns Réponse paginée avec métadonnées
  */
 export async function recupererEleves(
-  filtres?: OptionsFiltreEleves
-): Promise<ReponseApi<Eleve[]>> {
+  options?: OptionsEleves
+): Promise<ReponsePaginated<Eleve[]>> {
   const params = new URLSearchParams()
 
-  if (filtres?.classeId) {
-    params.append('classeId', filtres.classeId)
+  if (options?.classeId) {
+    params.append('classeId', options.classeId)
   }
 
-  if (filtres?.etablissementId) {
-    params.append('etablissementId', filtres.etablissementId)
+  if (options?.etablissementId) {
+    params.append('etablissementId', options.etablissementId)
   }
 
-  if (filtres?.recherche) {
-    params.append('recherche', filtres.recherche)
+  if (options?.search) {
+    params.append('search', options.search)
   }
 
-  if (filtres?.page) {
-    params.append('page', String(filtres.page))
+  if (options?.page) {
+    params.append('page', String(options.page))
   }
 
-  if (filtres?.limit) {
-    params.append('limit', String(filtres.limit))
+  if (options?.limit) {
+    params.append('limit', String(options.limit))
   }
 
-  if (filtres?.projection) {
-    params.append('projection', filtres.projection)
+  if (options?.projection) {
+    params.append('projection', options.projection)
+  }
+
+  if (options?.sortBy) {
+    params.append('sortBy', options.sortBy)
+  }
+
+  if (options?.sortOrder) {
+    params.append('sortOrder', options.sortOrder)
   }
 
   const queryString = params.toString()
   const url = queryString ? `/eleves?${queryString}` : '/eleves'
 
-  return requeteFetch<Eleve[]>(url)
+  return requeteFetchPaginee<Eleve[]>(url)
 }
 
 /**
@@ -402,22 +520,42 @@ export async function uploaderImage(
 // ==================== PERSONNEL ====================
 
 /**
- * Récupère la liste du personnel avec filtres optionnels
- * @param etablissementId - ID de l'établissement (optionnel)
- * @param role - Rôle du personnel (optionnel)
- * @param recherche - Terme de recherche (optionnel)
+ * Options de récupération paginée du personnel
+ */
+interface OptionsPersonnel {
+  /** ID de l'établissement (optionnel) */
+  etablissementId?: string
+  /** Rôle du personnel (optionnel) */
+  role?: string
+  /** Terme de recherche (optionnel) */
+  search?: string
+  /** Page pour la pagination (1 par défaut) */
+  page?: number
+  /** Limite de résultats par page (défaut: 50, max: 100) */
+  limit?: number
+  /** Champ de tri */
+  sortBy?: string
+  /** Ordre de tri (asc ou desc) */
+  sortOrder?: 'asc' | 'desc'
+}
+
+/**
+ * Récupère la liste du personnel avec pagination, filtres et recherche
  */
 export async function recupererPersonnel(
-  etablissementId?: string,
-  role?: string,
-  recherche?: string
-): Promise<ReponseApi<Personnel[]>> {
+  options?: OptionsPersonnel
+): Promise<ReponsePaginated<Personnel[]>> {
   const params = new URLSearchParams()
-  if (etablissementId) params.append('etablissementId', etablissementId)
-  if (role) params.append('role', role)
-  if (recherche) params.append('recherche', recherche)
+  
+  if (options?.etablissementId) params.append('etablissementId', options.etablissementId)
+  if (options?.role) params.append('role', options.role)
+  if (options?.search) params.append('search', options.search)
+  if (options?.page) params.append('page', String(options.page))
+  if (options?.limit) params.append('limit', String(options.limit))
+  if (options?.sortBy) params.append('sortBy', options.sortBy)
+  if (options?.sortOrder) params.append('sortOrder', options.sortOrder)
 
-  return requeteFetch<Personnel[]>(`/personnel?${params.toString()}`)
+  return requeteFetchPaginee<Personnel[]>(`/personnel?${params.toString()}`)
 }
 
 /**
@@ -468,5 +606,63 @@ export async function supprimerPersonnel(
   return requeteFetch<void>(`/personnel/${id}`, {
     method: 'DELETE',
   })
+}
+
+// ==================== FONCTIONS UNWRAPPED POUR useFetchCached ====================
+
+/**
+ * Récupère tous les établissements avec pagination
+ * Version unwrapped pour compatibilité avec useFetchCached
+ */
+export async function recupererEtablissementsList(
+  options?: OptionsEtablissements
+): Promise<Etablissement[]> {
+  const result = await recupererEtablissements(options)
+  if (result.succes && result.donnees) {
+    return result.donnees
+  }
+  return []
+}
+
+/**
+ * Récupère toutes les classes avec pagination
+ * Version unwrapped pour compatibilité avec useFetchCached
+ */
+export async function recupererClassesList(
+  options?: OptionsClasses
+): Promise<Classe[]> {
+  const result = await recupererClasses(options)
+  if (result.succes && result.donnees) {
+    return result.donnees
+  }
+  return []
+}
+
+/**
+ * Récupère tous les élèves avec pagination
+ * Version unwrapped pour compatibilité avec useFetchCached
+ */
+export async function recupererElevesList(
+  options?: OptionsEleves
+): Promise<Eleve[]> {
+  const result = await recupererEleves(options)
+  if (result.succes && result.donnees) {
+    return result.donnees
+  }
+  return []
+}
+
+/**
+ * Récupère tout le personnel avec pagination
+ * Version unwrapped pour compatibilité avec useFetchCached
+ */
+export async function recupererPersonnelList(
+  options?: OptionsPersonnel
+): Promise<Personnel[]> {
+  const result = await recupererPersonnel(options)
+  if (result.succes && result.donnees) {
+    return result.donnees
+  }
+  return []
 }
 

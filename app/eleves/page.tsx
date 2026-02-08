@@ -7,8 +7,9 @@
 'use client'
 
 import '@/styles/page-eleves.css'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { useDebounce } from 'use-debounce'
 import {
   Select,
   SelectContent,
@@ -18,6 +19,7 @@ import {
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
 import { ModalSimple } from '@/components/modal-simple'
+import { SkeletonList } from '@/components/skeleton-loader'
 // ModalConfirmation remplacé par une modal inline pour un contrôle visuel direct
 import { useNotification } from '@/components/notification'
 import { 
@@ -72,6 +74,7 @@ export default function PageEleves() {
   
   // États des filtres
   const [recherche, setRecherche] = useState('')
+  const [debouncedRecherche] = useDebounce(recherche, 300)
   const [filtreEtablissement, setFiltreEtablissement] = useState<string>('tous')
   const [filtreClasse, setFiltreClasse] = useState<string>('tous')
   
@@ -155,20 +158,24 @@ export default function PageEleves() {
     setFiltreClasse('tous')
   }, [filtreEtablissement])
 
-  // Filtrage local par recherche textuelle
-  const elevesFiltres = eleves.filter(e => {
-    const correspondRecherche = 
-      e.nom.toLowerCase().includes(recherche.toLowerCase()) ||
-      e.prenom.toLowerCase().includes(recherche.toLowerCase()) ||
-      (e.matricule?.toLowerCase().includes(recherche.toLowerCase()) ?? false)
-    
-    return correspondRecherche
-  })
+  // Filtrage local par recherche textuelle (avec debounce)
+  const elevesFiltres = useMemo(() => {
+    return eleves.filter(e => {
+      const correspondRecherche = 
+        e.nom.toLowerCase().includes(debouncedRecherche.toLowerCase()) ||
+        e.prenom.toLowerCase().includes(debouncedRecherche.toLowerCase()) ||
+        (e.matricule?.toLowerCase().includes(debouncedRecherche.toLowerCase()) ?? false)
+      
+      return correspondRecherche
+    })
+  }, [eleves, debouncedRecherche])
 
   // Classes filtrées par établissement sélectionné
-  const classesFiltrees = filtreEtablissement !== 'tous'
-    ? classes.filter(c => c.etablissementId === filtreEtablissement)
-    : classes
+  const classesFiltrees = useMemo(() => {
+    return filtreEtablissement !== 'tous'
+      ? classes.filter(c => c.etablissementId === filtreEtablissement)
+      : classes
+  }, [classes, filtreEtablissement])
 
   // Gestion de la suppression
   const gererSuppression = async () => {
@@ -201,7 +208,17 @@ export default function PageEleves() {
 
   // Affichage du chargement
   if (enChargement && eleves.length === 0) {
-    return <ChargementPage message="Chargement des élèves..." />
+    return (
+      <div className="students-container">
+        <div className="container px-4 py-6 space-y-6">
+          <div className="space-y-3">
+            <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+          </div>
+          <SkeletonList count={8} />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -339,6 +356,7 @@ export default function PageEleves() {
                         src={eleve.photo || '/placeholder.svg'}
                         alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
                         className="student-photo-image"
+                        loading="lazy"
                       />
                     </div>
 

@@ -11,6 +11,8 @@ import type { Metadata, Viewport } from 'next'
 import { Entete } from '@/components/entete'
 import { FournisseurNotification } from '@/components/notification'
 import { AnalyticsClient } from '@/components/analytics-client'
+import { SkipLink } from '@/components/accessibility'
+import { OrganizationSchema, BreadcrumbSchema } from '@/components/schema'
 
 // Fonts are intentionally not loaded from Google during CI/offline validation
 
@@ -40,6 +42,27 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
+  openGraph: {
+    title: 'Cartes Scolaires - Gestion et création de cartes',
+    description: 'Application de gestion et création de cartes scolaires pour établissements',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    siteName: 'CartesScolaires',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'CartesScolaires',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Cartes Scolaires',
+    description: 'Gestion et création de cartes scolaires pour établissements',
+    images: ['/logo.png'],
+  },
 }
 
 /**
@@ -63,6 +86,23 @@ export default function RootLayout({
   return (
     <html lang="fr" data-scroll-behavior="smooth">
       <body className="app-shell">
+        <SkipLink />
+        <OrganizationSchema
+          name="Cartes Scolaires"
+          description="Application de gestion et création de cartes scolaires pour établissements"
+          url={process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}
+          logo="/logo.png"
+        />
+        <BreadcrumbSchema
+          baseUrl={process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}
+          items={[
+            { name: 'Accueil', url: '/' },
+            { name: 'Élèves', url: '/eleves' },
+            { name: 'Classes', url: '/classes' },
+            { name: 'Personnel', url: '/personnel' },
+            { name: 'Cartes', url: '/cartes' },
+          ]}
+        />
         <FournisseurNotification>
           <div className="app-layout">
             <Entete />

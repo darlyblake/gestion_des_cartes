@@ -4,6 +4,7 @@
 
 'use client'
 
+import React from 'react'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -43,7 +44,7 @@ interface FormulaireMembresProps {
   onSaved?: (membre: Personnel) => void
 }
 
-export function FormulaireMembre({ 
+export const FormulaireMembre = React.memo(function FormulaireMembre({ 
   membre, 
   etablissements,
   onSaved 
@@ -536,4 +537,4 @@ export function FormulaireMembre({
       </div>
     </form>
   )
-}
+})

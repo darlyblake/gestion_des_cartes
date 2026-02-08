@@ -3,6 +3,7 @@
  * Affiche une statistique avec son icône et sa valeur
  */
 
+import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
@@ -31,7 +32,7 @@ interface CarteStatistiqueProps {
 /**
  * Composant Carte Statistique pour le dashboard
  */
-export function CarteStatistique({
+export const CarteStatistique = React.memo(function CarteStatistique({
   titre,
   valeur,
   description,
@@ -80,4 +81,4 @@ export function CarteStatistique({
       </CardContent>
     </Card>
   )
-}
+})

@@ -138,6 +138,7 @@ export function CarteClassique({
           <img
             src={eleve.photo || '/placeholder.svg?height=90&width=70'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+            loading="lazy"
             style={{
               width: '100%',
               height: '100%',

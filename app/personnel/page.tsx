@@ -8,8 +8,10 @@
 import '@/styles/page-personnel.css'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { useDebounce } from 'use-debounce'
 import { ChargementPage } from '@/components/chargement'
 import { ModalSimple } from '@/components/modal-simple'
+import { SkeletonList } from '@/components/skeleton-loader'
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -50,6 +52,7 @@ export default function PagePersonnel() {
   const { afficherNotification } = useNotification()
   const [personnel, setPersonnel] = useState<Personnel[]>([])
   const [recherche, setRecherche] = useState('')
+  const [debouncedRecherche] = useDebounce(recherche, 300)
   const [enChargement, setEnChargement] = useState(true)
   const [roleFiltre, setRoleFiltre] = useState<string>('tous')
   const [membreASupprimer, setMembreASupprimer] = useState<Personnel | null>(null)
@@ -87,15 +90,15 @@ export default function PagePersonnel() {
   const personnelFiltre = useMemo(() => {
     return personnel.filter((p) => {
       const matchRecherche =
-        p.nom.toLowerCase().includes(recherche.toLowerCase()) ||
-        p.prenom.toLowerCase().includes(recherche.toLowerCase()) ||
-        p.fonction.toLowerCase().includes(recherche.toLowerCase())
+        p.nom.toLowerCase().includes(debouncedRecherche.toLowerCase()) ||
+        p.prenom.toLowerCase().includes(debouncedRecherche.toLowerCase()) ||
+        p.fonction.toLowerCase().includes(debouncedRecherche.toLowerCase())
 
       const matchRole = roleFiltre === 'tous' || p.role === roleFiltre
 
       return matchRecherche && matchRole
     })
-  }, [personnel, recherche, roleFiltre])
+  }, [personnel, debouncedRecherche, roleFiltre])
 
   async function supprimerMembre(id: string) {
     try {
@@ -114,7 +117,17 @@ export default function PagePersonnel() {
   }
 
   if (enChargement) {
-    return <ChargementPage message="Chargement du personnel..." />
+    return (
+      <div className="personnel-container">
+        <div className="container personnel-content">
+          <div className="space-y-3 mb-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+          </div>
+          <SkeletonList count={8} />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -233,7 +246,7 @@ export default function PagePersonnel() {
                     <div className="personnel-member-header">
                       <div className="personnel-member-photo">
                         <img
-                          src={membre.photo || '/placeholder.svg'}
+                        src={membre.photo || '/placeholder.svg'}
                           alt={`Photo de ${membre.prenom} ${membre.nom}`}
                         />
                         <span className="personnel-member-role">{getRoleLabel(membre.role)}</span>

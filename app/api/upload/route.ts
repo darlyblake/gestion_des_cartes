@@ -6,7 +6,33 @@
 import { NextResponse } from 'next/server'
 import { uploadImage } from '@/lib/services/cloudinary'
 
+// Simple rate limiter in-memory (per IP) — pour production utilisez un store distribué (Redis)
+const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
+const RATE_LIMIT_MAX = 30 // max requests per window per IP
+const ipCounters = new Map<string, { count: number; resetAt: number }>()
+
+function isRateLimited(ip: string) {
+  const now = Date.now()
+  const entry = ipCounters.get(ip)
+  if (!entry || now > entry.resetAt) {
+    ipCounters.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    return false
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) return true
+  entry.count += 1
+  return false
+}
+
 export async function POST(requete: Request) {
+  // Rate limiting
+  const ip = (requete.headers.get('x-forwarded-for') || requete.headers.get('host') || 'unknown') as string
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { succes: false, erreur: 'Trop de requêtes — réessayez plus tard' },
+      { status: 429 }
+    )
+  }
   try {
     const formData = await requete.formData()
     const fichier = formData.get('image') as File | null

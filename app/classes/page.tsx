@@ -6,8 +6,9 @@
 'use client'
 
 import '@/styles/page-classes.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { useDebounce } from 'use-debounce'
 import {
   Select,
   SelectContent,
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
 import { ModalSimple } from '@/components/modal-simple'
+import { SkeletonList } from '@/components/skeleton-loader'
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -27,7 +29,7 @@ import {
   Users,
   School,
 } from 'lucide-react'
-import { recupererClasses, recupererEtablissementsOptions, supprimerClasse } from '@/lib/services/api'
+import { recupererClassesList, recupererEtablissementsList, supprimerClasse } from '@/lib/services/api'
 import type { Classe, Etablissement } from '@/lib/types'
 
 /**
@@ -46,6 +48,7 @@ export default function PageClasses() {
   const [classes, setClasses] = useState<ClasseAvecDetails[]>([])
   const [etablissements, setEtablissements] = useState<Etablissement[]>([])
   const [recherche, setRecherche] = useState('')
+  const [debouncedRecherche] = useDebounce(recherche, 300)
   const [filtreEtablissement, setFiltreEtablissement] = useState<string>('tous')
   const [enChargement, setEnChargement] = useState(true)
   const [classeASupprimer, setClasseASupprimer] = useState<ClasseAvecDetails | null>(null)
@@ -58,18 +61,13 @@ export default function PageClasses() {
   useEffect(() => {
     async function chargerDonnees() {
       try {
-        const [repClasses, repEtab] = await Promise.all([
-          recupererClasses(),
-          recupererEtablissementsOptions({ projection: 'light' }),
+        const [classesData, etablissementsData] = await Promise.all([
+          recupererClassesList(),
+          recupererEtablissementsList({ projection: 'light' }),
         ])
 
-        if (repClasses.succes && repClasses.donnees) {
-          setClasses(repClasses.donnees as ClasseAvecDetails[])
-        }
-
-        if (repEtab.succes && repEtab.donnees) {
-          setEtablissements(repEtab.donnees)
-        }
+        setClasses(classesData as ClasseAvecDetails[])
+        setEtablissements(etablissementsData)
       } catch (erreur) {
         console.error('Erreur:', erreur)
         afficherNotification('erreur', 'Erreur lors du chargement des données')
@@ -82,16 +80,18 @@ export default function PageClasses() {
   }, [afficherNotification])
 
   // Filtrage des classes
-  const classesFiltrees = classes.filter(c => {
-    const correspondRecherche = 
-      c.nom.toLowerCase().includes(recherche.toLowerCase()) ||
-      c.niveau.toLowerCase().includes(recherche.toLowerCase())
-    
-    const correspondEtablissement = 
-      filtreEtablissement === 'tous' || c.etablissementId === filtreEtablissement
+  const classesFiltrees = useMemo(() => {
+    return classes.filter(c => {
+      const correspondRecherche = 
+        c.nom.toLowerCase().includes(debouncedRecherche.toLowerCase()) ||
+        c.niveau.toLowerCase().includes(debouncedRecherche.toLowerCase())
+      
+      const correspondEtablissement = 
+        filtreEtablissement === 'tous' || c.etablissementId === filtreEtablissement
 
-    return correspondRecherche && correspondEtablissement
-  })
+      return correspondRecherche && correspondEtablissement
+    })
+  }, [classes, debouncedRecherche, filtreEtablissement])
 
   // Gestion de la suppression
   const gererSuppression = async () => {
@@ -121,7 +121,17 @@ export default function PageClasses() {
 
   // Affichage du chargement
   if (enChargement) {
-    return <ChargementPage message="Chargement des classes..." />
+    return (
+      <div className="classes-container">
+        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1rem' }}>
+          <div className="space-y-3 mb-6">
+            <div className="h-8 bg-gray-200 rounded w-1/4 animate-pulse"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+          </div>
+          <SkeletonList count={6} />
+        </div>
+      </div>
+    )
   }
 
   return (

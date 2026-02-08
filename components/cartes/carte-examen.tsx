@@ -106,6 +106,7 @@ export function CarteExamen({
           <img
             src={eleve.photo || '/placeholder.svg?height=80&width=65'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+            loading="lazy"
             style={{
               width: '100%',
               height: '100%',

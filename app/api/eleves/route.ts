@@ -4,37 +4,46 @@
  * =====================================================
  * 
  * Cette route gère les opérations CRUD pour les élèves.
+ * Support de la PAGINATION pour optimiser les performances.
  * 
  * CONNEXION FRONTEND-BACKEND :
  * Le frontend utilise le service API (/lib/services/api.ts) qui appelle
  * cette route via fetch(). Les données sont échangées en JSON.
  * 
  * MÉTHODES DISPONIBLES :
- * - GET  /api/eleves                          → Récupère tous les élèves
- * - GET  /api/eleves?classeId=xxx             → Filtre par classe
- * - GET  /api/eleves?etablissementId=xxx      → Filtre par établissement
- * - GET  /api/eleves?classeId=xxx&etablissementId=yyy → Filtre combiné
- * - POST /api/eleves                          → Crée un nouvel élève
+ * - GET  /api/eleves                              → Récupère les élèves (PAGINÉ)
+ * - GET  /api/eleves?classeId=xxx                → Filtre par classe (PAGINÉ)
+ * - GET  /api/eleves?etablissementId=xxx         → Filtre par établissement (PAGINÉ)
+ * - GET  /api/eleves?page=1&limit=50             → Pagination
+ * - GET  /api/eleves?search=nom                  → Recherche (PAGINÉ)
+ * - POST /api/eleves                             → Crée un nouvel élève
  * 
  * EXEMPLE D'UTILISATION FRONTEND :
  * ```typescript
  * import { recupererEleves } from '@/lib/services/api'
  * 
- * // Récupérer tous les élèves
- * const reponse = await recupererEleves()
+ * // Récupérer les élèves paginés
+ * const reponse = await recupererEleves({ page: 1, limit: 50 })
  * 
- * // Filtrer par classe
- * const reponse = await recupererEleves({ classeId: 'xxx' })
+ * // Filtrer par classe avec pagination
+ * const reponse = await recupererEleves({ classeId: 'xxx', page: 1, limit: 25 })
  * 
- * // Filtrer par établissement
- * const reponse = await recupererEleves({ etablissementId: 'yyy' })
+ * // Recherche avec pagination
+ * const reponse = await recupererEleves({ search: 'dupont', page: 1, limit: 50 })
  * ```
  * 
- * FORMAT DE RÉPONSE :
+ * FORMAT DE RÉPONSE PAGINÉE :
  * {
  *   succes: boolean,
  *   donnees: Eleve[],    // Si succes = true
- *   erreur: string       // Si succes = false
+ *   meta: {
+ *     total: number,
+ *     page: number,
+ *     limit: number,
+ *     totalPages: number,
+ *     hasNextPage: boolean,
+ *     hasPrevPage: boolean
+ *   }
  * }
  */
 
@@ -43,26 +52,56 @@ import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { CreerEleveDonnees } from '@/lib/types'
 import { serializeDocument, serializeDocuments, serializeReference } from '@/lib/services/serializers'
+import { elevesQuerySchema, generatePaginationMeta } from '@/lib/services/validation'
+import { checkRateLimit, checkSensitiveRateLimit } from '@/lib/services/rate-limiter'
 
 /**
  * GET /api/eleves
  * ---------------
- * Récupère la liste de tous les élèves avec filtres optionnels
+ * Récupère la liste des élèves avec pagination, filtres et recherche
  * 
  * @param requete - La requête HTTP entrante
- * @returns Liste des élèves avec leurs détails (classe, établissement)
+ * @returns Liste des élèves paginée avec métadonnées
  * 
  * Paramètres de requête (query params) :
+ * - page (optionnel, défaut: 1) : Numéro de page
+ * - limit (optionnel, défaut: 50) : Nombre d'éléments par page (max: 100)
  * - classeId (optionnel) : Filtre les élèves par ID de classe
  * - etablissementId (optionnel) : Filtre les élèves par ID d'établissement
- * 
- * Les deux filtres peuvent être combinés pour un filtrage plus précis.
+ * - search (optionnel) : Recherche sur nom et prénom
+ * - sortBy (optionnel) : Champ de tri (défaut: creeLe)
+ * - sortOrder (optionnel, défaut: desc) : Ordre de tri (asc ou desc)
  */
 export async function GET(requete: Request) {
   try {
+    // Rate limiting pour les requêtes GET
+    const rateLimitError = await checkRateLimit(requete)
+    if (rateLimitError) return rateLimitError
     const { searchParams } = new URL(requete.url)
-    const classeId = searchParams.get('classeId')
-    const etablissementId = searchParams.get('etablissementId')
+    
+    // Valider les paramètres avec Zod
+    const paramsResult = elevesQuerySchema.safeParse({
+      page: searchParams.get('page'),
+      limit: searchParams.get('limit'),
+      classeId: searchParams.get('classeId'),
+      etablissementId: searchParams.get('etablissementId'),
+      search: searchParams.get('search'),
+      sortBy: searchParams.get('sortBy'),
+      sortOrder: searchParams.get('sortOrder'),
+    })
+
+    if (!paramsResult.success) {
+      return NextResponse.json(
+        { 
+          succes: false, 
+          erreur: 'Paramètres invalides',
+          details: paramsResult.error.flatten().fieldErrors
+        },
+        { status: 400 }
+      )
+    }
+
+    const { page, limit, classeId, etablissementId, search, sortBy, sortOrder } = paramsResult.data
 
     const elevesCollection = await getCollection('eleves')
     const classesCollection = await getCollection('classes')
@@ -85,7 +124,23 @@ export async function GET(requete: Request) {
       filtre.classeId = { $in: idsClasses }
     }
 
-    // Récupérer les élèves avec les détails de la classe
+    // Ajouter la recherche textuelle sur nom et prénom
+    if (search) {
+      // Utiliser l'index text pour une recherche plus rapide
+      filtre.$text = { $search: search }
+    }
+
+    // Calculer le skip pour la pagination
+    const skip = (page - 1) * limit
+
+    // Déterminer le champ de tri
+    const sortField = sortBy || 'creeLe'
+    const sortDirection = sortOrder === 'asc' ? 1 : -1
+
+    // Compter le total AVANT la pagination
+    const total = await elevesCollection.countDocuments(filtre)
+
+    // Récupérer les élèves paginés avec les détails de la classe
     const eleves = await elevesCollection
       .aggregate([
         { $match: filtre },
@@ -107,6 +162,9 @@ export async function GET(requete: Request) {
           },
         },
         { $unwind: { path: '$etablissement', preserveNullAndEmptyArrays: true } },
+        { $sort: { [sortField]: sortDirection } },
+        { $skip: skip },
+        { $limit: limit },
       ])
       .toArray()
 
@@ -125,13 +183,17 @@ export async function GET(requete: Request) {
       }
     })
 
+    // Générer les métadonnées de pagination
+    const meta = generatePaginationMeta(total, page, limit)
+
     return NextResponse.json({
       succes: true,
       donnees: elevesFormates,
       meta: {
-        total: eleves.length,
+        ...meta,
         filtreClasse: classeId || null,
         filtreEtablissement: etablissementId || null,
+        search: search || null,
       },
     })
   } catch (erreur) {
@@ -149,6 +211,9 @@ export async function GET(requete: Request) {
  */
 export async function POST(requete: Request) {
   try {
+    // Rate limiting stricte pour les créations
+    const rateLimitError = await checkSensitiveRateLimit(requete)
+    if (rateLimitError) return rateLimitError
     const donnees: CreerEleveDonnees = await requete.json()
 
     // Validation des données requises

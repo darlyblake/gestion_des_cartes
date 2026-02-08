@@ -45,7 +45,7 @@ interface FormulaireEleveProps {
 /**
  * Composant Formulaire pour créer ou modifier un élève
  */
-export function FormulaireEleve({
+export const FormulaireEleve = React.memo(function FormulaireEleve({
   eleve,
   classes,
   etablissements = [],
@@ -72,6 +72,42 @@ export function FormulaireEleve({
 
   // Référence pour l'input file
   const inputFichierRef = useRef<HTMLInputElement>(null)
+
+  /**
+   * Valide un champ individuel en temps réel
+   */
+  const validerChamp = (nomChamp: string, valeur: string): string => {
+    switch (nomChamp) {
+      case 'nom':
+        return !valeur.trim() ? 'Le nom est requis' : ''
+      case 'prenom':
+        return !valeur.trim() ? 'Le prénom est requis' : ''
+      case 'dateNaissance':
+        return !valeur ? 'La date de naissance est requise' : ''
+      case 'etablissementId':
+        return !valeur ? 'L\'établissement est requis' : ''
+      case 'classeId':
+        return !valeur ? 'La classe est requise' : ''
+      default:
+        return ''
+    }
+  }
+
+  /**
+   * Gère la perte de focus d'un champ (validation onBlur)
+   */
+  const gererBlur = (nomChamp: string, valeur: string) => {
+    const erreur = validerChamp(nomChamp, valeur)
+    if (erreur) {
+      setErreurs(prev => ({ ...prev, [nomChamp]: erreur }))
+    } else {
+      setErreurs(prev => {
+        const nouvellesErreurs = { ...prev }
+        delete nouvellesErreurs[nomChamp]
+        return nouvellesErreurs
+      })
+    }
+  }
 
   /**
    * Gère la sélection d'une photo depuis la galerie
@@ -268,10 +304,13 @@ export function FormulaireEleve({
                   placeholder="DUPONT"
                   value={nom}
                   onChange={(e) => setNom(e.target.value.toUpperCase())}
+                  onBlur={() => gererBlur('nom', nom)}
+                  aria-invalid={!!erreurs.nom}
+                  aria-describedby={erreurs.nom ? 'nom-error' : undefined}
                   className={erreurs.nom ? 'form-control form-error-field' : 'form-control'}
                 />
                 {erreurs.nom && (
-                  <p className="form-error">{erreurs.nom}</p>
+                  <p id="nom-error" className="form-error" role="alert">{erreurs.nom}</p>
                 )}
               </div>
               
@@ -282,10 +321,13 @@ export function FormulaireEleve({
                   placeholder="Marie"
                   value={prenom}
                   onChange={(e) => setPrenom(e.target.value)}
+                  onBlur={() => gererBlur('prenom', prenom)}
+                  aria-invalid={!!erreurs.prenom}
+                  aria-describedby={erreurs.prenom ? 'prenom-error' : undefined}
                   className={erreurs.prenom ? 'form-control form-error-field' : 'form-control'}
                 />
                 {erreurs.prenom && (
-                  <p className="form-error">{erreurs.prenom}</p>
+                  <p id="prenom-error" className="form-error" role="alert">{erreurs.prenom}</p>
                 )}
               </div>
             </div>
@@ -300,8 +342,14 @@ export function FormulaireEleve({
                 type="date"
                 value={dateNaissance}
                 onChange={(e) => setDateNaissance(e.target.value)}
+                onBlur={() => gererBlur('dateNaissance', dateNaissance)}
+                aria-invalid={!!erreurs.dateNaissance}
+                aria-describedby={erreurs.dateNaissance ? 'dateNaissance-error' : undefined}
                 className={erreurs.dateNaissance ? 'border-destructive' : ''}
               />
+              {erreurs.dateNaissance && (
+                <p id="dateNaissance-error" className="form-error" role="alert">{erreurs.dateNaissance}</p>
+              )}
               {erreurs.dateNaissance && (
                 <p className="text-sm text-destructive">{erreurs.dateNaissance}</p>
               )}
@@ -413,4 +461,4 @@ export function FormulaireEleve({
       </CardContent>
     </Card>
   )
-}
+})
