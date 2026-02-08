@@ -176,7 +176,7 @@ export function validateQueryParams<T>(
   if (result.success) {
     return { success: true, data: result.data }
   }
-  return { success: false; errors: result.error }
+  return { success: false, errors: result.error }
 }
 
 export async function validateRequestBody<T>(
