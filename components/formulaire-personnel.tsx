@@ -7,6 +7,7 @@
 import React from 'react'
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -246,10 +247,12 @@ export const FormulaireMembre = React.memo(function FormulaireMembre({
             <>
               <div className="photo-container">
                 <div className="photo-preview-wrapper">
-                  <img
+                  <Image
                     src={photoPreview || '/placeholder.svg?height=128&width=96'}
                     alt="Aperçu"
                     className="photo-preview"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 96px"
                   />
                 </div>
                 <div className="photo-controls">

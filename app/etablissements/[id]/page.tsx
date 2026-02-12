@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { Building2, ArrowLeft, Pencil } from 'lucide-react'
@@ -70,7 +71,7 @@ export default function PageEtablissementDetail() {
       <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '1.5rem', alignItems: 'start' }}>
         <div style={{ border: '1px solid #e6edf3', borderRadius: 12, padding: '1rem' }}>
           {etablissement.logo ? (
-            <img src={etablissement.logo} alt="Logo" style={{ width: '100%', borderRadius: 8, objectFit: 'cover' }} />
+            <Image src={etablissement.logo} alt="Logo" style={{ width: '100%', borderRadius: 8, objectFit: 'cover' }} width={336} height={224} />
           ) : (
             <div style={{ width: '100%', height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: 8 }}>
               <Building2 size={48} />
@@ -95,7 +96,7 @@ export default function PageEtablissementDetail() {
           {etablissement.signature && (
             <div style={{ marginTop: '1rem' }}>
               <div style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: 6 }}>Signature enregistrée</div>
-              <img src={etablissement.signature} alt="Signature" style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }} />
+              <Image src={etablissement.signature} alt="Signature" style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }} width={336} height={100} />
             </div>
           )}
         </div>

@@ -1,0 +1,221 @@
+{
+  "title": "🚀 Index des Tests de Performance",
+  "updated": "2026-02-08T20:06:10.442Z",
+  "categories": {
+    "Démarrage Rapide": {
+      "icon": "⚡",
+      "description": "Pour commencer immédiatement",
+      "items": [
+        {
+          "title": "Script interactif avec menu",
+          "command": "./scripts/run-performance-tests.sh",
+          "description": "Menu visuel pour choisir le type de test",
+          "time": "2-5 min"
+        },
+        {
+          "title": "Script Node.js (Plus simple)",
+          "command": "pnpm perf",
+          "description": "Lance directement les tests de performance",
+          "time": "1-2 min"
+        },
+        {
+          "title": "Dashboard HTML",
+          "command": "http://localhost:3000/performance-dashboard.html",
+          "description": "Visualiser les résultats dans un dashboard",
+          "type": "url",
+          "time": "Instant"
+        }
+      ]
+    },
+    "Tests Playwright": {
+      "icon": "📄",
+      "description": "Tests automatisés détaillés",
+      "items": [
+        {
+          "title": "Tests complets",
+          "command": "pnpm test:perf",
+          "description": "Toute la suite de tests Playwright",
+          "file": "tests/e2e/performance.spec.ts"
+        },
+        {
+          "title": "Tests avec UI",
+          "command": "pnpm test:perf:ui",
+          "description": "Interface visuelle des tests",
+          "file": "tests/e2e/performance.spec.ts"
+        },
+        {
+          "title": "Tests une seule fois",
+          "command": "pnpm test:run",
+          "description": "Exécution unique sans watch",
+          "file": "tests/e2e/performance.spec.ts"
+        }
+      ]
+    },
+    "Documentation": {
+      "icon": "📚",
+      "description": "Guides et références",
+      "items": [
+        {
+          "title": "Point de départ (À LIRE EN PREMIER)",
+          "file": "TESTING_PERFORMANCE_START_HERE.md",
+          "description": "Guide complet en français"
+        },
+        {
+          "title": "Guide détaillé des tests",
+          "file": "PERFORMANCE_TEST_GUIDE.md",
+          "description": "Techniques avancées et troubleshooting"
+        },
+        {
+          "title": "Résultats JSON",
+          "file": "performance-report.json",
+          "description": "Rapport complet en format JSON",
+          "command": "cat performance-report.json"
+        }
+      ]
+    },
+    "Scripts": {
+      "icon": "⚙️",
+      "description": "Fichiers de configuration",
+      "items": [
+        {
+          "title": "Performance Test Script",
+          "file": "scripts/performance-test.mjs",
+          "description": "Script Node.js autonome",
+          "command": "node scripts/performance-test.mjs"
+        },
+        {
+          "title": "Interactive Test Runner",
+          "file": "scripts/run-performance-tests.sh",
+          "description": "Script shell avec menu",
+          "command": "./scripts/run-performance-tests.sh"
+        },
+        {
+          "title": "Tests Playwright",
+          "file": "tests/e2e/performance.spec.ts",
+          "description": "Suite complète de tests",
+          "language": "TypeScript"
+        }
+      ]
+    },
+    "Métriques mesurées": {
+      "icon": "📊",
+      "description": "Ce que nous testons",
+      "items": [
+        {
+          "title": "Pages Web",
+          "metrics": [
+            "Load Time - Temps de chargement complet",
+            "FCP - First Contentful Paint",
+            "LCP - Largest Contentful Paint",
+            "TTI - Time To Interactive",
+            "Resource Timing - Requêtes réseau"
+          ]
+        },
+        {
+          "title": "APIs - Récupération",
+          "metrics": [
+            "GET /api/classes",
+            "GET /api/eleves",
+            "GET /api/etablissements",
+            "GET /api/personnel",
+            "GET /api/statistiques"
+          ]
+        },
+        {
+          "title": "APIs - Envoi",
+          "metrics": [
+            "POST /api/classes",
+            "POST /api/eleves",
+            "POST /api/etablissements",
+            "POST /api/personnel"
+          ]
+        },
+        {
+          "title": "Réseau global",
+          "metrics": [
+            "Total Requests - Nombre de requêtes",
+            "Total Data - Volume transféré",
+            "Avg Response Time - Temps moyen",
+            "Concurrent Requests - Requêtes parallèles"
+          ]
+        }
+      ]
+    },
+    "Commandes npm": {
+      "icon": "🛠️",
+      "description": "Toutes les commandes disponibles",
+      "items": [
+        {
+          "title": "Performance - Tests Playwright",
+          "commands": [
+            "pnpm test:perf",
+            "pnpm test:perf:ui"
+          ]
+        },
+        {
+          "title": "Performance - Script Node.js",
+          "commands": [
+            "pnpm perf",
+            "pnpm perf:dev"
+          ]
+        },
+        {
+          "title": "Tests généraux",
+          "commands": [
+            "pnpm test",
+            "pnpm test:run",
+            "pnpm test:coverage",
+            "pnpm test:ui"
+          ]
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "title": "Exemple 1: Test rapide (5 min)",
+      "steps": [
+        "1. Terminal 1: pnpm dev",
+        "2. Terminal 2: pnpm perf",
+        "3. Ouvrir: http://localhost:3000/performance-dashboard.html",
+        "4. Voir les résultats en temps réel"
+      ]
+    },
+    {
+      "title": "Exemple 2: Tests détaillés (15 min)",
+      "steps": [
+        "1. Terminal 1: pnpm dev",
+        "2. Terminal 2: pnpm test:perf:ui",
+        "3. Consulter les résultats dans Terminal 2",
+        "4. Analyser le fichier performance-report.json"
+      ]
+    },
+    {
+      "title": "Exemple 3: Comparaison avant/après optimisation",
+      "steps": [
+        "1. pnpm perf > before.log",
+        "2. [Effectuer optimisations]",
+        "3. pnpm perf > after.log",
+        "4. diff before.log after.log"
+      ]
+    }
+  ],
+  "help": [
+    {
+      "question": "Par où commencer?",
+      "answer": "Lire le fichier TESTING_PERFORMANCE_START_HERE.md"
+    },
+    {
+      "question": "Quelle est la différence entre Playwright et Node.js?",
+      "answer": "Playwright: Plus détaillé, interface visuelle. Node.js: Plus simple, plus rapide."
+    },
+    {
+      "question": "Les résultats sont différents à chaque test?",
+      "answer": "Normal! Exécutez plusieurs fois et moyennez les résultats."
+    },
+    {
+      "question": "Où voir les résultats?",
+      "answer": "1. Dashboard HTML - 2. Console - 3. Fichier performance-report.json"
+    }
+  ]
+}

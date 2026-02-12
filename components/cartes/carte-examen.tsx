@@ -7,6 +7,7 @@
 'use client'
 
 import { genererQRCodeDataURL, formaterDonneesCarteQR } from '@/lib/qrcode'
+import Image from 'next/image'
 import type { Eleve, Classe, Etablissement } from '@/lib/types'
 
 /**
@@ -103,13 +104,12 @@ export function CarteExamen({
             position: 'relative',
           }}
         >
-          <img
+          <Image
             src={eleve.photo || '/placeholder.svg?height=80&width=65'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
-            loading="lazy"
+            width={65}
+            height={80}
             style={{
-              width: '100%',
-              height: '100%',
               objectFit: 'cover',
             }}
           />
@@ -179,13 +179,11 @@ export function CarteExamen({
               gap: '4px',
             }}
           >
-            <img
+            <Image
               src={qrCodeUrl || "/placeholder.svg"}
               alt="QR Code"
-              style={{
-                width: '65px',
-                height: '65px',
-              }}
+              width={65}
+              height={65}
             />
           </div>
         )}

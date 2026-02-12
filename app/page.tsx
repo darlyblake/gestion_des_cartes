@@ -31,25 +31,42 @@ export default function PageDashboard() {
   const [statistiques, setStatistiques] = useState<StatistiquesDashboard | null>(null)
   const [etablissements, setEtablissements] = useState<Etablissement[]>([])
   const [enChargement, setEnChargement] = useState(true)
+  const [erreur, setErreur] = useState<string | null>(null)
 
   // Chargement des données au montage
   useEffect(() => {
     async function chargerDonnees() {
       try {
+        setErreur(null)
         const [repStats, repEtab] = await Promise.all([
           recupererStatistiques(),
           recupererEtablissements(),
         ])
 
-        if (repStats.succes && repStats.donnees) {
+        // Vérifier les erreurs d'API
+        if (!repStats.succes) {
+          console.error('Erreur statistiques:', repStats.erreur)
+          setErreur(repStats.erreur || 'Erreur lors du chargement des statistiques')
+          return
+        }
+
+        if (!repEtab.succes) {
+          console.error('Erreur établissements:', repEtab.erreur)
+          setErreur(repEtab.erreur || 'Erreur lors du chargement des établissements')
+          return
+        }
+
+        if (repStats.donnees) {
           setStatistiques(repStats.donnees)
         }
 
-        if (repEtab.succes && repEtab.donnees) {
+        if (repEtab.donnees) {
           setEtablissements(repEtab.donnees)
         }
-      } catch (erreur) {
-        console.error('Erreur lors du chargement des données:', erreur)
+      } catch (erreurCapturee) {
+        console.error('Erreur lors du chargement des données:', erreurCapturee)
+        const message = erreurCapturee instanceof Error ? erreurCapturee.message : 'Erreur inconnue'
+        setErreur(`Erreur de chargement: ${message}`)
       } finally {
         setEnChargement(false)
       }
@@ -61,6 +78,37 @@ export default function PageDashboard() {
   // Affichage du chargement
   if (enChargement) {
     return <ChargementPage message="Chargement du tableau de bord..." />
+  }
+
+  // Affichage de l'erreur
+  if (erreur) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <div style={{
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '0.5rem',
+          padding: '1rem',
+          color: '#c33',
+        }}>
+          <h2>Erreur lors du chargement</h2>
+          <p>{erreur}</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              backgroundColor: '#ff5555',
+              color: 'white',
+              border: 'none',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.25rem',
+              cursor: 'pointer',
+            }}
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (

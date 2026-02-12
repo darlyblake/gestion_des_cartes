@@ -7,6 +7,7 @@
 'use client'
 
 import { genererQRCodeDataURL, formaterDonneesCarteQR } from '@/lib/qrcode'
+import Image from 'next/image'
 import type { Eleve, Classe, Etablissement } from '@/lib/types'
 import { useEffect, useState } from 'react'
 
@@ -156,13 +157,12 @@ export function CarteModerneRectoVerso({
               flexShrink: 0,
             }}
           >
-            <img
+            <Image
               src={eleve.photo || '/placeholder.svg?height=89&width=69'}
               alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
-              loading="lazy"
+              width={69}
+              height={89}
               style={{
-                width: '100%',
-                height: '100%',
                 objectFit: 'cover',
                 borderRadius: '5px',
               }}
@@ -216,13 +216,11 @@ export function CarteModerneRectoVerso({
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                 }}
               >
-                <img
+                <Image
                   src={qrCodeUrl}
                   alt="QR Code"
-                  style={{
-                    width: '55px',
-                    height: '55px',
-                  }}
+                  width={55}
+                  height={55}
                 />
               </div>
               <div style={{ fontSize: '8px', marginTop: '4px', opacity: 0.9 }}>
@@ -442,12 +440,12 @@ export function CarteModerneRectoVerso({
               Signature
             </div>
             {etablissement.signature ? (
-              <img
+              <Image
                 src={etablissement.signature}
                 alt="Signature"
+                width={60}
+                height={30}
                 style={{
-                  maxWidth: '60px',
-                  maxHeight: '30px',
                   objectFit: 'contain',
                 }}
               />

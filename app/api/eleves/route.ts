@@ -48,12 +48,14 @@
  */
 
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { CreerEleveDonnees } from '@/lib/types'
 import { serializeDocument, serializeDocuments, serializeReference } from '@/lib/services/serializers'
 import { elevesQuerySchema, generatePaginationMeta } from '@/lib/services/validation'
 import { checkRateLimit, checkSensitiveRateLimit } from '@/lib/services/rate-limiter'
+import { invalidateCacheAfterChange } from '@/lib/services/api-cache'
 
 /**
  * GET /api/eleves
@@ -142,44 +144,35 @@ export async function GET(requete: Request) {
 
     // Récupérer les élèves paginés avec les détails de la classe
     const eleves = await elevesCollection
-      .aggregate([
-        { $match: filtre },
-        {
-          $lookup: {
-            from: 'classes',
-            localField: 'classeId',
-            foreignField: '_id',
-            as: 'classe',
+      .aggregate(
+        [
+          { $match: filtre },
+          { $sort: { [sortField]: sortDirection } },
+          { $skip: skip },
+          { $limit: limit },
+          // ⚡ Projection optimisée - sans lookups coûteux
+          {
+            $project: {
+              _id: 1,
+              nom: 1,
+              prenom: 1,
+              email: 1,
+              photo: 1,
+              numeroMatricule: 1,
+              classeId: 1,
+              dateNaissance: 1,
+              creeLe: 1,
+            },
           },
-        },
-        { $unwind: { path: '$classe', preserveNullAndEmptyArrays: true } },
-        {
-          $lookup: {
-            from: 'etablissements',
-            localField: 'classe.etablissementId',
-            foreignField: '_id',
-            as: 'etablissement',
-          },
-        },
-        { $unwind: { path: '$etablissement', preserveNullAndEmptyArrays: true } },
-        { $sort: { [sortField]: sortDirection } },
-        { $skip: skip },
-        { $limit: limit },
-      ])
+        ],
+        { maxTimeMS: 5000, allowDiskUse: true }
+      )
       .toArray()
 
     const elevesFormates = eleves.map((eleve) => {
-      const { classe, etablissement, ...rest } = eleve
       return {
-        ...serializeDocument(rest),
-        classeId: serializeReference(rest.classeId),
-        classe: classe
-          ? {
-              ...serializeDocument(classe),
-              etablissementId: serializeReference(classe.etablissementId),
-            }
-          : undefined,
-        etablissement: etablissement ? serializeDocument(etablissement) : undefined,
+        ...serializeDocument(eleve),
+        classeId: serializeReference(eleve.classeId),
       }
     })
 
@@ -265,6 +258,14 @@ export async function POST(requete: Request) {
     }
 
     const resultat = await elevesCollection.insertOne(nouvelEleve)
+    
+    // Invalider le cache après création
+    invalidateCacheAfterChange('eleve')
+    
+    // Revalidate la page des élèves pour forcer le rafraîchissement
+    revalidatePath('/eleves')
+    revalidatePath('/api/eleves')
+
     const classeSerialisee = {
       ...serializeDocument(classeExiste),
       etablissementId: serializeReference(classeExiste.etablissementId),

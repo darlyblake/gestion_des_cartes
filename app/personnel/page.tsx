@@ -8,6 +8,7 @@
 import '@/styles/page-personnel.css'
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useDebounce } from 'use-debounce'
 import { ChargementPage } from '@/components/chargement'
 import { ModalSimple } from '@/components/modal-simple'
@@ -245,9 +246,11 @@ export default function PagePersonnel() {
                   <div className="personnel-member-content">
                     <div className="personnel-member-header">
                       <div className="personnel-member-photo">
-                        <img
-                        src={membre.photo || '/placeholder.svg'}
+                        <Image
+                          src={membre.photo || '/placeholder.svg'}
                           alt={`Photo de ${membre.prenom} ${membre.nom}`}
+                          width={64}
+                          height={64}
                         />
                         <span className="personnel-member-role">{getRoleLabel(membre.role)}</span>
                       </div>

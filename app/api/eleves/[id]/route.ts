@@ -10,6 +10,7 @@ import { ObjectId } from 'mongodb'
 import { getCollection } from '@/lib/services/mongodb'
 import type { ModifierEleveDonnees } from '@/lib/types'
 import { serializeDocument, serializeReference } from '@/lib/services/serializers'
+import { invalidateCacheAfterChange } from '@/lib/services/api-cache'
 
 /**
  * GET /api/eleves/[id]
@@ -131,6 +132,9 @@ export async function PUT(
       )
     }
 
+    // Invalider le cache après modification
+    invalidateCacheAfterChange('eleve')
+
     // Récupérer l'élève mis à jour
     const eleveMisAJour = await elevesCollection
       .aggregate([
@@ -204,6 +208,9 @@ export async function DELETE(
         { status: 404 }
       )
     }
+
+    // Invalider le cache après suppression
+    invalidateCacheAfterChange('eleve')
 
     return NextResponse.json({
       succes: true,

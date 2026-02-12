@@ -15,7 +15,11 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:perf": "playwright test tests/e2e/performance.spec.ts",
+    "test:perf:ui": "playwright test tests/e2e/performance.spec.ts --ui",
+    "perf": "node scripts/performance-test.mjs",
+    "perf:dev": "pnpm dev & sleep 3 && node scripts/performance-test.mjs && kill %1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

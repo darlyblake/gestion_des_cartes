@@ -1,6 +1,7 @@
 'use client'
 
 import { genererQRCodeDataURL, formaterDonneesCartePersonnel } from '@/lib/qrcode'
+import Image from 'next/image'
 import type { Etablissement, Personnel, RolePersonnel } from '@/lib/types'
 import { useEffect, useState } from 'react'
 
@@ -148,12 +149,12 @@ export function CartePersonnelRectoVerso({
               flexShrink: 0
             }}
           >
-            <img
+            <Image
               src={personnel.photo || '/placeholder.svg?height=75&width=60'}
               alt={`${personnel.prenom} ${personnel.nom}`}
+              width={60}
+              height={70}
               style={{
-                width: '100%',
-                height: '100%',
                 objectFit: 'cover',
                 objectPosition: 'center',
               }}
@@ -333,10 +334,11 @@ export function CartePersonnelRectoVerso({
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
               }}
             >
-              <img
+              <Image
                 src={qrCodeUrl}
                 alt="QR Code de vérification"
-                style={{ width: '42px', height: '42px' }}
+                width={42}
+                height={42}
               />
             </div>
             <div style={{ 
@@ -557,13 +559,13 @@ export function CartePersonnelRectoVerso({
     LA DIRECTION
   </div>
 
-  {etablissement.signature ? (
-    <img
+    {etablissement.signature ? (
+    <Image
       src={etablissement.signature}
       alt="Signature"
+      width={130}
+      height={92}
       style={{
-        maxWidth: '130px',
-        maxHeight: '92px',
         objectFit: 'contain',
         marginBottom: '8px'
       }}

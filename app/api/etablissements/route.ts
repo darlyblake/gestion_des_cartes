@@ -86,7 +86,10 @@ export async function GET(requete: Request) {
 
         // Récupérer les établissements paginés
         const etablissements = await etablissementsCollection
-          .find(filtre, { projection: projectionFields })
+          .find(filtre, { 
+            projection: projectionFields,
+            maxTimeMS: 5000, // ⚡ Timeout 5s pour les recherches
+          })
           .sort({ [sortField]: sortDirection })
           .skip((page - 1) * limit)
           .limit(limit)

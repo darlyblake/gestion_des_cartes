@@ -15,6 +15,7 @@ import {
   serializeOptionalDocument,
   serializeReference,
 } from '@/lib/services/serializers'
+import { invalidateCacheAfterChange } from '@/lib/services/api-cache'
 
 /* -------------------------------------------------------------------------- */
 /*                                   GET                                      */
@@ -121,6 +122,9 @@ export async function PUT(
       )
     }
 
+    // Invalider le cache après modification
+    invalidateCacheAfterChange('classe')
+
     const classeMiseAJour = await classesCollection
       .aggregate([
         { $match: { _id: new ObjectId(id) } },
@@ -164,8 +168,13 @@ export async function DELETE(
     const classesCollection = await getCollection('classes')
     const elevesCollection = await getCollection('eleves')
 
+    // Vérifier les élèves liés - classeId peut être string ou ObjectId
+    const objectId = new ObjectId(id)
     const elevesLies = await elevesCollection.countDocuments({
-      classeId: new ObjectId(id),
+      $or: [
+        { classeId: objectId },
+        { classeId: id },
+      ],
     })
 
     if (elevesLies > 0) {
@@ -181,6 +190,9 @@ export async function DELETE(
     const resultat = await classesCollection.deleteOne({
       _id: new ObjectId(id),
     })
+
+    // Invalider le cache après suppression
+    invalidateCacheAfterChange('classe')
 
     if (resultat.deletedCount === 0) {
       return NextResponse.json(

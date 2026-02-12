@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useNotification } from '@/components/notification'
+import Image from 'next/image'
 import { ChargementPage } from '@/components/chargement'
 import { ArrowLeft, Save, X, Palette, Building2, MapPin, Phone, Calendar, Type, Image as ImageIcon } from 'lucide-react'
 import type { Etablissement } from '@/lib/types'
@@ -689,10 +690,12 @@ export default function PageModifierEtablissement() {
                 <label style={styles.logoUpload}>
                   {etablissement.logo ? (
                     <>
-                      <img 
+                      <Image 
                         src={etablissement.logo} 
                         alt="Logo" 
                         style={styles.logoPreview}
+                        width={120}
+                        height={120}
                       />
                       <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
                         Cliquez pour changer le logo
@@ -729,10 +732,12 @@ export default function PageModifierEtablissement() {
                 <label style={styles.logoUpload}>
                   {etablissement.signature ? (
                     <>
-                      <img 
+                      <Image 
                         src={etablissement.signature} 
                         alt="Signature" 
                         style={styles.logoPreview}
+                        width={120}
+                        height={120}
                       />
                       <span style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
                         Cliquez pour changer la signature
@@ -818,7 +823,7 @@ export default function PageModifierEtablissement() {
             <h3 style={styles.previewTitle}>Aperçu</h3>
             <div style={styles.previewCard}>
               {etablissement.logo ? (
-                <img 
+                <Image 
                   src={etablissement.logo} 
                   alt="Logo" 
                   style={{
@@ -828,6 +833,8 @@ export default function PageModifierEtablissement() {
                     objectFit: 'cover',
                     border: `2px solid ${etablissement.couleur || COULEURS_PREDEFINIES[0]}`,
                   }}
+                  width={64}
+                  height={64}
                 />
               ) : (
                 <div style={{

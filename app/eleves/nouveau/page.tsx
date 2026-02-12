@@ -7,9 +7,9 @@ import { FormulaireEleve } from '@/components/formulaire-eleve'
 import { ChargementPage } from '@/components/chargement'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft } from 'lucide-react'
-import { recupererClasses, recupererEtablissements, creerEleve } from '@/lib/services/api'
+import { recupererClassesList, recupererEtablissementsList, creerEleve } from '@/lib/services/api'
 import { useFetchCached, invalidateCache } from '@/hooks/use-fetch-cached'
-import type { CreerEleveDonnees } from '@/lib/types'
+import type { CreerEleveDonnees, Etablissement, Classe } from '@/lib/types'
 import '@/styles/page-eleves-nouveau.css'
 
 export default function PageNouvelEleve() {
@@ -21,18 +21,21 @@ export default function PageNouvelEleve() {
   const [enSoumission, setEnSoumission] = useState(false)
 
   // Utiliser le hook de caching pour recuperer les classes et établissements
-  const { data: classes = [], isLoading: enChargement } = useFetchCached(
-    () => recupererClasses(),
+  const { data: classesData, isLoading: enChargementClasses } = useFetchCached(
+    () => recupererClassesList(),
     'classes_list',
     5 * 60 * 1000 // Cache 5 minutes
   )
+  const classes = (classesData as Classe[] | null) ?? []
 
   const { data: etablissementsData } = useFetchCached(
-    () => recupererEtablissements({ projection: 'light' }),
+    () => recupererEtablissementsList({ projection: 'light' }),
     'etablissements_list',
     5 * 60 * 1000
   )
-  const etablissements = etablissementsData ?? []
+  const etablissements = (etablissementsData as Etablissement[] | null) ?? []
+  
+  const enChargement = enChargementClasses
 
   const gererSoumission = useCallback(async (donnees: CreerEleveDonnees) => {
     setEnSoumission(true)
@@ -41,7 +44,8 @@ export default function PageNouvelEleve() {
       if (reponse.succes) {
         afficherNotification('succes', 'Eleve inscrit avec succes')
         invalidateCache('classes_list')
-        routeur.push('/eleves')
+        // Redirection avec replace pour éviter que l'utilisateur puisse revenir en arrière
+        routeur.replace('/eleves')
       } else {
         afficherNotification('erreur', reponse.erreur || 'Erreur lors de linscription')
       }

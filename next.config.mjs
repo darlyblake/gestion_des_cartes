@@ -14,6 +14,23 @@ const nextConfig = {
     unoptimized: false,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 an
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/**',
+      },
+    ],
   },
   
   // ✅ Optimisations de performance
@@ -21,9 +38,51 @@ const nextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   
-  // ✅ Headers de sécurité
+  // ✅ Headers de sécurité et de caching
   async headers() {
     return [
+      // API endpoints - Cache 5 minutes
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=300, s-maxage=300, stale-while-revalidate=600',
+          },
+          // Note: Content-Encoding is handled automatically by Next.js with compress: true
+        ],
+      },
+      // Static assets - Cache 1 year
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Images - Cache 30 days
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // Public files - Cache 1 day
+      {
+        source: '/public/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=172800',
+          },
+        ],
+      },
+      // All pages - Cache 1 minute
       {
         source: '/:path*',
         headers: [
@@ -46,6 +105,10 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'geolocation=(), microphone=(), camera=()',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=60, stale-while-revalidate=300',
           },
         ],
       },

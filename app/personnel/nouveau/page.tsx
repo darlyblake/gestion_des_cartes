@@ -5,32 +5,23 @@
 'use client'
 
 import '@/styles/page-personnel-nouveau.css'
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChargementPage } from '@/components/chargement'
 import { FormulaireMembre } from '@/components/formulaire-personnel'
 import { recupererEtablissementsList } from '@/lib/services/api'
+import { useFetchCached } from '@/hooks/use-fetch-cached'
 import type { Etablissement } from '@/lib/types'
 
 export default function PageNouveauPersonnel() {
   const router = useRouter()
-  const [etablissements, setEtablissements] = useState<Etablissement[]>([])
-  const [enChargement, setEnChargement] = useState(true)
 
-  useEffect(() => {
-    chargerEtablissements()
-  }, [])
-
-  async function chargerEtablissements() {
-    try {
-      const etablissements = await recupererEtablissementsList({ projection: 'light' })
-      setEtablissements(etablissements)
-    } catch (erreur) {
-      console.error('Erreur:', erreur)
-    } finally {
-      setEnChargement(false)
-    }
-  }
+  // Utiliser le hook de caching pour récupérer les établissements
+  const { data: etablissementsData, isLoading: enChargement } = useFetchCached(
+    () => recupererEtablissementsList({ projection: 'light' }),
+    'etablissements_list',
+    5 * 60 * 1000 // Cache 5 minutes
+  )
+  const etablissements = (etablissementsData as Etablissement[] | null) ?? []
 
   if (enChargement) {
     return <ChargementPage message="Chargement..." />

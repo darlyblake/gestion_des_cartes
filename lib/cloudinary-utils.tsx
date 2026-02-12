@@ -2,6 +2,8 @@
  * Utilitaires pour optimiser les images avec Cloudinary
  * Offre lazy loading, compression, et formats modernes
  */
+import Image from 'next/image'
+
 
 /**
  * Options d'optimisation d'image Cloudinary
@@ -176,14 +178,14 @@ export function OptimisedImage({
       : undefined
 
   return (
-    <img
+    <Image
       {...props}
       src={optimisedSrc}
-      srcSet={srcSet}
       alt={alt}
       loading={lazyLoading === 'lazy' ? 'lazy' : 'eager'}
       className={`${avecPlaceholder ? 'bg-gray-200' : ''} ${className}`.trim()}
-      decoding="async"
+      fill
+      sizes="(max-width: 768px) 100vw, 1280px"
     />
   )
 }

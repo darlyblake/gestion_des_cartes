@@ -7,6 +7,7 @@
 'use client'
 
 import { genererQRCodeDataURL, formaterDonneesCarteQR } from '@/lib/qrcode'
+import Image from 'next/image'
 import { normaliserCouleur } from '@/lib/utils'
 import type { Eleve, Classe, Etablissement } from '@/lib/types'
 
@@ -135,13 +136,12 @@ export function CarteClassique({
             border: `2px solid ${couleur}`,
           }}
         >
-          <img
+          <Image
             src={eleve.photo || '/placeholder.svg?height=90&width=70'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
-            loading="lazy"
+            width={70}
+            height={90}
             style={{
-              width: '100%',
-              height: '100%',
               objectFit: 'cover',
             }}
           />
@@ -192,13 +192,11 @@ export function CarteClassique({
               gap: '4px',
             }}
           >
-            <img
+            <Image
               src={qrCodeUrl || "/placeholder.svg"}
               alt="QR Code"
-              style={{
-                width: '60px',
-                height: '60px',
-              }}
+              width={60}
+              height={60}
             />
             <div style={{ fontSize: '7px', color: '#9ca3af' }}>
               Scanner pour vérifier

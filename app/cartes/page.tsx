@@ -119,9 +119,12 @@ function ContenuPageCartes() {
           recupererPersonnelList(),
         ])
 
-        setEleves(repEleves as EleveComplet[])
-        setClasses(repClasses)
-        setEtablissements(repEtab)
+        // Les fonctions List retournent directement les données
+        // recupererElevesList et recupererPersonnelList retournent directement le tableau
+        // recupererClassesList et recupererEtablissementsList retournent ReponseApi avec .donnees
+        setEleves(repEleves)
+        setClasses(repClasses.donnees || [])
+        setEtablissements(repEtab.donnees || [])
         setPersonnels(repPersonnel)
       } catch (erreur) {
         console.error('Erreur:', erreur)

@@ -8,6 +8,7 @@
 import React from "react"
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useNotification } from '@/components/notification'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { creerEtablissement } from '@/lib/services/api'
@@ -721,7 +722,7 @@ export default function PageNouvelEtablissement() {
                 <label htmlFor="logo-upload" style={{...styles.uploadBox, cursor: 'pointer'}}>
                   {logo ? (
                     <>
-                      <img src={logo} alt="Logo" style={styles.uploadImage} />
+                      <Image src={logo} alt="Logo" style={styles.uploadImage} width={120} height={80} />
                       <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Cliquez pour changer</span>
                     </>
                   ) : (
@@ -753,7 +754,7 @@ export default function PageNouvelEtablissement() {
                 <label htmlFor="signature-upload" style={{...styles.uploadBox, cursor: 'pointer'}}>
                   {signature ? (
                     <>
-                      <img src={signature} alt="Signature" style={styles.uploadImage} />
+                      <Image src={signature} alt="Signature" style={styles.uploadImage} width={120} height={80} />
                       <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Cliquez pour changer</span>
                     </>
                   ) : (

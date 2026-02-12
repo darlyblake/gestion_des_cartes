@@ -7,6 +7,7 @@
 
 import React from "react"
 
+import Image from 'next/image'
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,33 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Camera, Upload, Loader2, User } from 'lucide-react'
 import type { Eleve, Classe, Sexe, CreerEleveDonnees, Etablissement } from '@/lib/types'
+
+// URL de l'API
+const API_URL = '/api'
+
+/**
+ * Uploade une image vers Cloudinary via l'API
+ * @param fichier - Le fichier image à uploader
+ * @returns L'URL Cloudinary de l'image uploadée
+ */
+async function uploaderPhotoCloudinary(fichier: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('image', fichier)
+  formData.append('type', 'photo')
+
+  const reponse = await fetch(`${API_URL}/upload`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!reponse.ok) {
+    const erreur = await reponse.json()
+    throw new Error(erreur.erreur || 'Erreur lors de l\'upload de l\'image')
+  }
+
+  const donnees = await reponse.json()
+  return donnees.url
+}
 
 /**
  * Props du composant FormulaireEleve
@@ -68,6 +96,8 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
   const [etablissementId, setEtablissementId] = useState<string>('')
   const [photo, setPhoto] = useState(eleve?.photo || '')
   const [photoPreview, setPhotoPreview] = useState(eleve?.photo || '')
+  const [photoEnUpload, setPhotoEnUpload] = useState(false)
+  const [photoFichier, setPhotoFichier] = useState<File | null>(null)
   const [erreurs, setErreurs] = useState<Record<string, string>>({})
 
   // Référence pour l'input file
@@ -111,36 +141,39 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
 
   /**
    * Gère la sélection d'une photo depuis la galerie
+   * L'upload Cloudinary se fait lors de la soumission du formulaire
    */
   const gererSelectionPhoto = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fichier = event.target.files?.[0]
-    if (fichier) {
-      // Vérification du type
-      if (!fichier.type.startsWith('image/')) {
-        setErreurs(prev => ({ ...prev, photo: 'Veuillez sélectionner une image' }))
-        return
-      }
+    if (!fichier) return
 
-      // Vérification de la taille (5MB max)
-      if (fichier.size > 5 * 1024 * 1024) {
-        setErreurs(prev => ({ ...prev, photo: 'L\'image est trop volumineuse (max 5MB)' }))
-        return
-      }
-
-      // Création de l'aperçu
-      const lecteur = new FileReader()
-      lecteur.onload = (e) => {
-        const resultat = e.target?.result as string
-        setPhotoPreview(resultat)
-        setPhoto(resultat)
-        setErreurs(prev => {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { photo, ...reste } = prev
-          return reste
-        })
-      }
-      lecteur.readAsDataURL(fichier)
+    // Vérification du type
+    if (!fichier.type.startsWith('image/')) {
+      setErreurs(prev => ({ ...prev, photo: 'Veuillez sélectionner une image' }))
+      return
     }
+
+    // Vérification de la taille (5MB max)
+    if (fichier.size > 5 * 1024 * 1024) {
+      setErreurs(prev => ({ ...prev, photo: 'L\'image est trop volumineuse (max 5MB)' }))
+      return
+    }
+
+    // Création de l'aperçu local immédiatement (sans upload)
+    const lecteur = new FileReader()
+    lecteur.onload = (e) => {
+      setPhotoPreview(e.target?.result as string)
+    }
+    lecteur.readAsDataURL(fichier)
+
+    // Stocker le fichier pour l'upload lors de la soumission
+    setPhotoFichier(fichier)
+
+    // Effacer l'erreur photo si elle existe
+    setErreurs(prev => {
+      const { photo, ...reste } = prev
+      return reste
+    })
   }
 
   /**
@@ -171,23 +204,36 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
       return
     }
 
-    const donnees: CreerEleveDonnees = {
-      nom: nom.trim(),
-      prenom: prenom.trim(),
-      dateNaissance,
-      lieuNaissance: lieuNaissance.trim(),
-      sexe,
-      classeId,
-      photo: photo || undefined,
-    }
-
-    console.warn('FormulaireEleve: données prêtes, appel onSoumettre', { donnees })
     try {
+      setPhotoEnUpload(true)
+      console.warn('FormulaireEleve: début upload Cloudinary')
+
+      // Upload vers Cloudinary si une photo a été sélectionnée
+      let photoUrl = eleve?.photo || ''
+      if (photoFichier) {
+        console.warn('FormulaireEleve: upload en cours...')
+        photoUrl = await uploaderPhotoCloudinary(photoFichier)
+        console.warn('FormulaireEleve: upload terminé', photoUrl)
+      }
+
+      const donnees: CreerEleveDonnees = {
+        nom: nom.trim(),
+        prenom: prenom.trim(),
+        dateNaissance,
+        lieuNaissance: lieuNaissance.trim(),
+        sexe,
+        classeId,
+        photo: photoUrl || undefined,
+      }
+
+      console.warn('FormulaireEleve: création élève...', donnees)
       await onSoumettre(donnees)
-      console.warn('FormulaireEleve: onSoumettre resolved')
+      console.warn('FormulaireEleve: élève créé avec succès')
     } catch (err) {
-      console.error('FormulaireEleve: erreur lors de onSoumettre', err)
+      console.error('FormulaireEleve: erreur complète:', err)
       throw err
+    } finally {
+      setPhotoEnUpload(false)
     }
   }
 
@@ -212,6 +258,13 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
     }
   }, [classeIdDefaut, classes, etablissementId])
 
+  // Debug: log les établissements reçus
+  useEffect(() => {
+    console.log('FormulaireEleve - établissements reçus:', etablissements?.length || 0)
+    console.log('FormulaireEleve - etablissementId actuel:', etablissementId)
+  }, [etablissements, etablissementId])
+
+  const etablissementsAffiche = etablissements && etablissements.length > 0 ? etablissements : []
   const classesAffichees = etablissementId
     ? classes.filter(c => c.etablissementId === etablissementId)
     : classes
@@ -236,8 +289,8 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
                 <div className="h-40 w-32 photo-preview">
                   {photoPreview ? (
                     <img 
-                      src={photoPreview || "/placeholder.svg"} 
-                      alt="Photo de l'élève"
+                      src={photoPreview} 
+                      alt="Aperçu de la photo"
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -257,14 +310,20 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
                 accept="image/*"
                 className="hidden"
                 onChange={gererSelectionPhoto}
+                disabled={photoEnUpload}
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => inputFichierRef.current?.click()}
+                disabled={photoEnUpload}
               >
-                <Upload className="mr-2 h-4 w-4" />
+                {photoEnUpload ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="mr-2 h-4 w-4" />
+                )}
                 Galerie
               </Button>
               <Button
@@ -278,8 +337,13 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
                     inputFichierRef.current.click()
                   }
                 }}
+                disabled={photoEnUpload}
               >
-                <Camera className="mr-2 h-4 w-4" />
+                {photoEnUpload ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Camera className="mr-2 h-4 w-4" />
+                )}
                 Caméra
               </Button>
             </div>
@@ -383,16 +447,28 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
             
             <div className="space-y-2">
                 <Label htmlFor="etablissement">Établissement *</Label>
-                <Select value={etablissementId || ''} onValueChange={(v) => setEtablissementId(v)}>
+                <Select 
+                  value={etablissementId} 
+                  onValueChange={(v) => setEtablissementId(v)}
+                >
                   <SelectTrigger id="etablissement">
-                    <SelectValue placeholder="Sélectionner un établissement" />
+                    <SelectValue placeholder={etablissementsAffiche.length === 0 ? "Aucun établissement disponible" : "Sélectionner un établissement"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {(etablissements ?? []).map((etab, idx) => (
-                      <SelectItem key={etab.id || etab._id?.toString() || `etab-${idx}`} value={etab.id || etab._id?.toString() || ''}>
-                        {etab.nom}
-                      </SelectItem>
-                    ))}
+                    {etablissementsAffiche.length > 0 ? (
+                      etablissementsAffiche.map((etab, idx) => (
+                        <SelectItem 
+                          key={etab.id || etab._id?.toString() || `etab-${idx}`} 
+                          value={etab.id || etab._id?.toString() || ''}
+                        >
+                          {etab.nom}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        Aucun établissement trouvé
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
                 {erreurs.etablissementId && (
@@ -440,21 +516,21 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
               type="button"
               variant="outline"
               onClick={onAnnuler}
-              disabled={enChargement}
+              disabled={enChargement || photoEnUpload}
               className="flex-1 sm:flex-none"
             >
               Annuler
             </Button>
             <Button 
               type="submit" 
-              disabled={enChargement || classesAffichees.length === 0}
+              disabled={enChargement || classesAffichees.length === 0 || photoEnUpload}
               className="flex-1 sm:flex-none"
               size="lg"
             >
-              {enChargement && (
+              {(enChargement || photoEnUpload) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {eleve ? 'Enregistrer' : 'Créer l\'élève'}
+              {photoEnUpload ? 'Upload...' : eleve ? 'Enregistrer' : 'Créer l\'élève'}
             </Button>
           </div>
         </form>

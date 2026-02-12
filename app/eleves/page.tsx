@@ -9,6 +9,7 @@
 import '@/styles/page-eleves.css'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useDebounce } from 'use-debounce'
 import {
   Select,
@@ -352,11 +353,12 @@ export default function PageEleves() {
                   {/* Header avec photo */}
                   <div className="student-header">
                     <div className="student-photo">
-                      <img
+                      <Image
                         src={eleve.photo || '/placeholder.svg'}
                         alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+                        width={64}
+                        height={64}
                         className="student-photo-image"
-                        loading="lazy"
                       />
                     </div>
 

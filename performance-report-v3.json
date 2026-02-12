@@ -1,0 +1,42 @@
+🚀 Démarrage des tests de performance...
+Base URL: http://localhost:3000
+
+✅ Serveur actif sur http://localhost:3000
+
+📄 Test des pages web...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Accueil - 412ms (HTTP 200)
+✅ Cartes - 444ms (HTTP 200)
+✅ Classes - 346ms (HTTP 200)
+✅ Élèves - 525ms (HTTP 200)
+✅ Établissements - 427ms (HTTP 200)
+✅ Personnel - 472ms (HTTP 200)
+
+🔌 Test des APIs - Récupération (GET)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ GET /api/classes - 87ms | .52KB (HTTP 200)
+✅ GET /api/eleves - 2684ms | .35KB (HTTP 200)
+⚠️  GET /api/etablissements - 10047ms (HTTP 000)
+✅ GET /api/personnel - 2173ms | .17KB (HTTP 200)
+
+⚡ Test des requêtes parallèles (4 APIs simultanément)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 4 requêtes parallèles: 33601ms
+
+╔════════════════════════════════════════════════════════════════╗
+║                    📊 RÉSUMÉ DES PERFORMANCES                  ║
+╚════════════════════════════════════════════════════════════════╝
+
+📄 Pages Web:
+   Moyenne: 437ms | Max: 525ms | Min: 346ms
+
+🔌 APIs (GET):
+   Moyenne: 1648ms
+
+⚡ Requêtes Parallèles: 33601ms
+
+════════════════════════════════════════════════════════════════
+✅ Tests complétés!
+
+📁 Rapport sauvegardé: performance-report.json
+

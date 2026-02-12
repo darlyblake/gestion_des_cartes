@@ -73,12 +73,28 @@ async function requeteFetch<T>(
       },
     })
 
-    const donnees = await reponse.json()
+    // Vérifier le Content-Type avant de parser JSON
+    const contentType = reponse.headers.get('content-type')
+    let donnees: any = {}
+
+    // Essayer de parser JSON seulement si c'est du JSON
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        donnees = await reponse.json()
+      } catch (parseError) {
+        console.error('Erreur parsing JSON:', parseError)
+        donnees = { erreur: 'Réponse invalide du serveur' }
+      }
+    } else {
+      // Si ce n'est pas du JSON, essayer de lire le texte
+      const texte = await reponse.text()
+      donnees = { erreur: texte || 'Réponse vide du serveur' }
+    }
 
     if (!reponse.ok) {
       return {
         succes: false,
-        erreur: donnees.erreur || 'Une erreur est survenue',
+        erreur: donnees.erreur || `Erreur serveur (${reponse.status})`,
       }
     }
 
@@ -112,12 +128,28 @@ async function requeteFetchPaginee<T>(
       },
     })
 
-    const donnees = await reponse.json()
+    // Vérifier le Content-Type avant de parser JSON
+    const contentType = reponse.headers.get('content-type')
+    let donnees: any = {}
+
+    // Essayer de parser JSON seulement si c'est du JSON
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        donnees = await reponse.json()
+      } catch (parseError) {
+        console.error('Erreur parsing JSON:', parseError)
+        donnees = { erreur: 'Réponse invalide du serveur' }
+      }
+    } else {
+      // Si ce n'est pas du JSON, essayer de lire le texte
+      const texte = await reponse.text()
+      donnees = { erreur: texte || 'Réponse vide du serveur' }
+    }
 
     if (!reponse.ok) {
       return {
         succes: false,
-        erreur: donnees.erreur || 'Une erreur est survenue',
+        erreur: donnees.erreur || `Erreur serveur (${reponse.status})`,
       }
     }
 
@@ -495,12 +527,28 @@ export async function uploaderImage(
       body: formData,
     })
 
-    const donnees = await reponse.json()
+    // Vérifier le Content-Type avant de parser JSON
+    const contentType = reponse.headers.get('content-type')
+    let donnees: any = {}
+
+    // Essayer de parser JSON seulement si c'est du JSON
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        donnees = await reponse.json()
+      } catch (parseError) {
+        console.error('Erreur parsing JSON upload:', parseError)
+        donnees = { erreur: 'Réponse invalide du serveur' }
+      }
+    } else {
+      // Si ce n'est pas du JSON, essayer de lire le texte
+      const texte = await reponse.text()
+      donnees = { erreur: texte || 'Réponse vide du serveur' }
+    }
 
     if (!reponse.ok) {
       return {
         succes: false,
-        erreur: donnees.erreur || 'Erreur lors de l\'upload',
+        erreur: donnees.erreur || `Erreur lors de l'upload (${reponse.status})`,
       }
     }
 
@@ -616,12 +664,12 @@ export async function supprimerPersonnel(
  */
 export async function recupererEtablissementsList(
   options?: OptionsEtablissements
-): Promise<Etablissement[]> {
+): Promise<ReponseApi<Etablissement[]>> {
   const result = await recupererEtablissements(options)
   if (result.succes && result.donnees) {
-    return result.donnees
+    return { succes: true, donnees: result.donnees }
   }
-  return []
+  return { succes: false, erreur: result.erreur || 'Erreur' }
 }
 
 /**
@@ -630,12 +678,12 @@ export async function recupererEtablissementsList(
  */
 export async function recupererClassesList(
   options?: OptionsClasses
-): Promise<Classe[]> {
+): Promise<ReponseApi<Classe[]>> {
   const result = await recupererClasses(options)
   if (result.succes && result.donnees) {
-    return result.donnees
+    return { succes: true, donnees: result.donnees }
   }
-  return []
+  return { succes: false, erreur: result.erreur || 'Erreur' }
 }
 
 /**

@@ -7,6 +7,7 @@
 'use client'
 
 import { genererQRCodeDataURL, formaterDonneesCarteQR } from '@/lib/qrcode'
+import Image from 'next/image'
 import { normaliserCouleur } from '@/lib/utils'
 import type { Eleve, Classe, Etablissement } from '@/lib/types'
 
@@ -154,13 +155,12 @@ function CarteRecto({
             alignSelf: 'center'
           }}
         >
-          <img
+          <Image
             src={eleve.photo || '/placeholder.svg?height=62&width=50'}
             alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
-            loading="lazy"
+            width={50}
+            height={62}
             style={{
-              width: '100%',
-              height: '100%',
               objectFit: 'cover',
             }}
           />
@@ -299,13 +299,11 @@ function CarteRecto({
               border: '1px solid #e5e7eb',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
             }}>
-              <img
+              <Image
                 src={qrCodeUrl || '/placeholder.svg'}
                 alt="QR Code de vérification"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                }}
+                width={40}
+                height={40}
               />
             </div>
             <div style={{ 
@@ -538,12 +536,12 @@ function CarteVerso({
           {/* Signature */}
           <div style={{ textAlign: 'center', flex: 1, maxWidth: '70px' }}>
             {etablissement.signature ? (
-              <img
+              <Image
                 src={etablissement.signature}
                 alt="Signature du Directeur"
+                width={60}
+                height={20}
                 style={{
-                  width: '60px',
-                  height: '20px',
                   objectFit: 'contain',
                   margin: '0 auto 2px',
                 }}
@@ -588,7 +586,7 @@ function CarteVerso({
               color: couleur,
               fontSize: '7px'
             }}>
-              31/08/{etablissement.anneeScolaire.split('-')[1]}
+              31/08/{etablissement.anneeScolaire?.split('-')?.[1] || '2025'}
             </div>
           </div>
         </div>

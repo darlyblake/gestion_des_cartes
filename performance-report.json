@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-02-09T00:01:03+01:00",
+  "baseUrl": "http://localhost:3000",
+  "pagePerformance": [
+    {"name": "Personnel", "loadTime": 472},
+    {"name": "Cartes", "loadTime": 444},
+    {"name": "Accueil", "loadTime": 412},
+    {"name": "Élèves", "loadTime": 525},
+    {"name": "Établissements", "loadTime": 427},
+    {"name": "Classes", "loadTime": 346}  ],
+  "networks": {
+    "concurrentRequests": 33601,
+    "testTime": "lun. 09 févr. 2026 00:01:03 WAT"
+  }
+}

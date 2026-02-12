@@ -66,8 +66,9 @@ export default function PageClasses() {
           recupererEtablissementsList({ projection: 'light' }),
         ])
 
-        setClasses(classesData as ClasseAvecDetails[])
-        setEtablissements(etablissementsData)
+        // Les fonctions List retournent ReponseApi, extraire donnees
+        setClasses((classesData as { donnees?: ClasseAvecDetails[] })?.donnees || [])
+        setEtablissements((etablissementsData as { donnees?: Etablissement[] })?.donnees || [])
       } catch (erreur) {
         console.error('Erreur:', erreur)
         afficherNotification('erreur', 'Erreur lors du chargement des données')

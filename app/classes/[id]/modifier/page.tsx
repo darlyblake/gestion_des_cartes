@@ -86,6 +86,7 @@ export default function PageModifierClasse() {
       const reponse = await modifierClasse(id, donnees)
       if (reponse.succes) {
         afficherNotification('succes', 'Classe modifiée avec succès')
+        router.refresh() // Recharger les données de la page précédente
         router.push('/classes')
       } else {
         afficherNotification('erreur', reponse.erreur || 'Erreur lors de la modification')

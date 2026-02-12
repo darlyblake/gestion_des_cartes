@@ -89,57 +89,40 @@ export async function GET(requete: Request) {
         // Compter le total pour la pagination
         const total = await classesCollection.countDocuments(filtre)
 
-        // Récupérer les classes paginées
+        // ⚡ OPTIMISATION: Récupérer les classes paginées SANS lookups coûteux
+        // Les lookups notamment le count d'élèves, sont très coûteux sur grandes collections
         const result = await classesCollection
-          .aggregate([
-            { $match: filtre },
-            {
-              $lookup: {
-                from: 'etablissements',
-                localField: 'etablissementId',
-                foreignField: '_id',
-                as: 'etablissement',
+          .aggregate(
+            [
+              { $match: filtre },
+              { $sort: { [sortField]: sortDirection } },
+              { $skip: skip },
+              { $limit: limit },
+              // Retourner uniquement les champs essentiels
+              {
+                $project: {
+                  _id: 1,
+                  nom: 1,
+                  niveau: 1,
+                  etablissementId: 1,
+                  creeLe: 1,
+                  modifieLe: 1,
+                },
               },
-            },
-            {
-              $unwind: {
-                path: '$etablissement',
-                preserveNullAndEmptyArrays: true,
-              },
-            },
-            {
-              $lookup: {
-                from: 'eleves',
-                localField: '_id',
-                foreignField: 'classeId',
-                as: 'eleves',
-              },
-            },
-            {
-              $addFields: {
-                nombreEleves: { $size: '$eleves' },
-              },
-            },
-            {
-              $project: {
-                eleves: 0,
-              },
-            },
-            { $sort: { [sortField]: sortDirection } },
-            { $skip: skip },
-            { $limit: limit },
-          ])
+            ],
+            { maxTimeMS: 5000, allowDiskUse: true } // Timeout 5s, disk use OK
+          )
           .toArray()
 
-        return { classes: result.map((classe) => {
-          const { etablissement, ...rest } = classe
-          return {
-            ...serializeDocument(rest),
-            etablissement: etablissement ? serializeDocument(etablissement) : undefined,
-            etablissementId: serializeReference(rest.etablissementId),
-            nombreEleves: classe.nombreEleves || 0,
-          }
-        }), total }
+        return { 
+          classes: result.map((classe) => {
+            return {
+              ...serializeDocument(classe),
+              etablissementId: serializeReference(classe.etablissementId),
+            }
+          }), 
+          total 
+        }
       },
       3 * 60 * 1000 // 3 minutes TTL
     )
