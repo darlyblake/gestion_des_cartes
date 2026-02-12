@@ -5,13 +5,7 @@
 
 'use client'
 
-import dynamic from 'next/dynamic'
-
-// Charger l'Analytics de manière lazy et sans SSR
-const Analytics = dynamic(
-  () => import('@vercel/analytics/next').then(mod => mod.Analytics),
-  { ssr: false }
-)
+import { Analytics } from '@vercel/analytics/react'
 
 export function AnalyticsClient() {
   return <Analytics />

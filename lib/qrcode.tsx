@@ -129,6 +129,14 @@ export function genererQRCodeSVG(options: OptionsQRCode): string {
  * @returns Data URL du QR Code (base64)
  */
 export function genererQRCodeDataURL(options: OptionsQRCode): string {
+  // Vérification null/undefined pour éviter l'erreur "Cannot read properties of undefined (reading 'split')"
+  if (!options.donnees) {
+    // Retourner un QR Code de fallback avec des données par défaut
+    const svg = genererQRCodeSVG({ donnees: 'CARTE:INVALID|DATA:UNDEFINED', taille: options.taille || 100, couleurFond: options.couleurFond || '#ffffff', couleurModule: options.couleurModule || '#000000' })
+    const base64 = btoa(unescape(encodeURIComponent(svg)))
+    return `data:image/svg+xml;base64,${base64}`
+  }
+  
   const svg = genererQRCodeSVG(options)
   const base64 = btoa(unescape(encodeURIComponent(svg)))
   return `data:image/svg+xml;base64,${base64}`
@@ -146,7 +154,12 @@ export function formaterDonneesCarteQR(
   matricule: string,
   nomEtablissement: string
 ): string {
-  return `CARTE:${matricule}|ID:${eleveId}|ETAB:${nomEtablissement}`
+  // Vérifications null/undefined pour éviter l'erreur "Cannot read properties of undefined (reading 'split')"
+  const safeEleveId = eleveId || 'INCONNU'
+  const safeMatricule = matricule || 'SANS-MATRICULE'
+  const safeEtablissement = nomEtablissement || 'ETABLISSEMENT'
+
+  return `CARTE:${safeMatricule}|ID:${safeEleveId}|ETAB:${safeEtablissement}`
 }
 
 /**
@@ -160,5 +173,10 @@ export function formaterDonneesCartePersonnel(
   role: string,
   nomEtablissement: string
 ): string {
-  return `CARTE_STAFF:${role}|ID:${personnelId}|ETAB:${nomEtablissement}`
+  // Vérifications null/undefined pour éviter les erreurs
+  const safePersonnelId = personnelId || 'INCONNU'
+  const safeRole = role || 'PERSONNEL'
+  const safeEtablissement = nomEtablissement || 'ETABLISSEMENT'
+
+  return `CARTE_STAFF:${safeRole}|ID:${safePersonnelId}|ETAB:${safeEtablissement}`
 }

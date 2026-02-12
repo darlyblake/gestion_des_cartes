@@ -586,7 +586,13 @@ function CarteVerso({
               color: couleur,
               fontSize: '7px'
             }}>
-              31/08/{etablissement.anneeScolaire?.split('-')?.[1] || '2025'}
+              {/* Utilisation d'une fonction safe pour extraire l'année de fin */}
+              31/08/{(() => {
+                const annee = etablissement.anneeScolaire
+                if (!annee || typeof annee !== 'string') return '2025'
+                const parts = annee.split('-')
+                return parts.length >= 2 ? parts[1] : '2025'
+              })()}
             </div>
           </div>
         </div>
