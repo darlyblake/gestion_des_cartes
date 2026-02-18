@@ -61,6 +61,9 @@ export const FormulaireMembre = React.memo(function FormulaireMembre({
   const [donnees, setDonnees] = useState<CreerPersonnelDonnees>({
     nom: membre?.nom || '',
     prenom: membre?.prenom || '',
+    dateNaissance: membre?.dateNaissance || '',
+    lieuNaissance: membre?.lieuNaissance || '',
+    nationalite: membre?.nationalite || '',
     role: membre?.role || 'autre',
     fonction: membre?.fonction || '',
     email: membre?.email || '',
@@ -363,6 +366,39 @@ export const FormulaireMembre = React.memo(function FormulaireMembre({
                 value={donnees.prenom}
                 onChange={(e) => setDonnees({ ...donnees, prenom: e.target.value })}
                 placeholder="Jean"
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
+            <div className="form-field-group">
+              <Label htmlFor="dateNaissance" className="form-label">Date de naissance</Label>
+              <Input
+                id="dateNaissance"
+                type="date"
+                value={donnees.dateNaissance || ''}
+                onChange={(e) => setDonnees({ ...donnees, dateNaissance: e.target.value })}
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
+            <div className="form-field-group">
+              <Label htmlFor="lieuNaissance" className="form-label">Lieu de naissance</Label>
+              <Input
+                id="lieuNaissance"
+                value={donnees.lieuNaissance || ''}
+                onChange={(e) => setDonnees({ ...donnees, lieuNaissance: e.target.value })}
+                placeholder="Paris"
+                disabled={enChargement}
+                className="form-input"
+              />
+            </div>
+            <div className="form-field-group">
+              <Label htmlFor="nationalite" className="form-label">Nationalité</Label>
+              <Input
+                id="nationalite"
+                value={donnees.nationalite || ''}
+                onChange={(e) => setDonnees({ ...donnees, nationalite: e.target.value })}
+                placeholder="Française"
                 disabled={enChargement}
                 className="form-input"
               />

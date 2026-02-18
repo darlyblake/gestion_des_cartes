@@ -91,6 +91,7 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
       : ''
   )
   const [lieuNaissance, setLieuNaissance] = useState(eleve?.lieuNaissance || '')
+  const [nationalite, setNationalite] = useState((eleve as any)?.nationalite || '')
   const [sexe, setSexe] = useState<Sexe>(eleve?.sexe || 'M')
   const [classeId, setClasseId] = useState(eleve?.classeId || classeIdDefaut || '')
   const [etablissementId, setEtablissementId] = useState<string>('')
@@ -221,6 +222,7 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
         prenom: prenom.trim(),
         dateNaissance,
         lieuNaissance: lieuNaissance.trim(),
+        nationalite: nationalite.trim(),
         sexe,
         classeId,
         photo: photoUrl || undefined,
@@ -426,6 +428,16 @@ export const FormulaireEleve = React.memo(function FormulaireEleve({
                 placeholder="Paris"
                 value={lieuNaissance}
                 onChange={(e) => setLieuNaissance(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nationalite">Nationalité</Label>
+              <Input
+                id="nationalite"
+                placeholder="Française"
+                value={nationalite}
+                onChange={(e) => setNationalite(e.target.value)}
               />
             </div>
           </div>

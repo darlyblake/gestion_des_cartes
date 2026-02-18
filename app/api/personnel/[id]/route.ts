@@ -90,6 +90,9 @@ export async function PUT(
     if (data.email !== undefined) miseAJour.email = data.email
     if (data.telephone !== undefined) miseAJour.telephone = data.telephone
     if (data.photo) miseAJour.photo = data.photo
+    if (data.dateNaissance !== undefined) miseAJour.dateNaissance = data.dateNaissance
+    if (data.lieuNaissance !== undefined) miseAJour.lieuNaissance = data.lieuNaissance
+    if (data.nationalite !== undefined) miseAJour.nationalite = data.nationalite
     if (data.etablissementId) miseAJour.etablissementId = new ObjectId(data.etablissementId)
 
     const resultat = await personnelCollection.updateOne(

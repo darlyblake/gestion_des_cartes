@@ -74,7 +74,7 @@ export async function GET(requete: Request) {
 
         // Déterminer les champs à retourner
         const projectionFields = projection === 'light' 
-          ? { nom: 1, logo: 1, couleur: 1 } 
+          ? { nom: 1, logo: 1, signature: 1, couleur: 1, police: 1, telephone: 1, email: 1, adresse: 1, anneeScolaire: 1 } 
           : {}
 
         // Déterminer le champ de tri
@@ -157,6 +157,7 @@ export async function POST(requete: Request) {
       signature: donnees.signature || null,
       adresse: donnees.adresse,
       telephone: donnees.telephone || '',
+      email: donnees.email || '',
       anneeScolaire: donnees.anneeScolaire,
       couleur: donnees.couleur || '#1e40af',
       police: donnees.police || 'Arial',

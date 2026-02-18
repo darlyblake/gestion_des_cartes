@@ -48,6 +48,7 @@ export default function PageNouvelEtablissement() {
   const [nom, setNom] = useState('')
   const [adresse, setAdresse] = useState('')
   const [telephone, setTelephone] = useState('')
+  const [email, setEmail] = useState('')
   const [anneeScolaire, setAnneeScolaire] = useState('2025-2026')
   const [couleur, setCouleur] = useState(COULEURS_PREDEFINIES[0])
   const [police, setPolice] = useState(POLICES_DISPONIBLES[0])
@@ -71,9 +72,9 @@ export default function PageNouvelEtablissement() {
   }
 
   /**
-   * Gère l'upload du logo
+   * Gère l'upload du logo vers Cloudinary
    */
-  const gererUploadLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const gererUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -87,15 +88,31 @@ export default function PageNouvelEtablissement() {
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = (event) => {
-      setLogo(event.target?.result as string)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      formData.append('type', 'logo')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+      if (data.succes) {
+        setLogo(data.url)
+        afficherNotification('succes', 'Logo uploadé avec succès')
+      } else {
+        afficherNotification('erreur', data.erreur || 'Erreur lors de l\'upload')
+      }
+    } catch (error) {
+      console.error('Erreur upload logo:', error)
+      afficherNotification('erreur', 'Erreur lors de l\'upload du logo')
     }
-    reader.readAsDataURL(file)
   }
 
   /**
-   * Gère l'upload de la signature
+   * Gère l'upload de la signature via base64 (FileReader)
    */
   const gererUploadSignature = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -114,6 +131,7 @@ export default function PageNouvelEtablissement() {
     const reader = new FileReader()
     reader.onload = (event) => {
       setSignature(event.target?.result as string)
+      afficherNotification('succes', 'Signature chargée')
     }
     reader.readAsDataURL(file)
   }
@@ -132,6 +150,7 @@ export default function PageNouvelEtablissement() {
         nom: nom.trim(),
         adresse: adresse.trim(),
         telephone: telephone.trim(),
+        email: email.trim() || undefined,
         anneeScolaire: anneeScolaire.trim(),
         couleur,
         police,
@@ -563,7 +582,7 @@ export default function PageNouvelEtablissement() {
                 )}
               </div>
 
-              {/* Téléphone et Année scolaire */}
+              {/* Téléphone, Email et Année scolaire */}
               <div style={styles.grid}>
                 <div style={styles.fieldGroup}>
                   <label htmlFor="telephone" style={styles.label}>
@@ -576,6 +595,30 @@ export default function PageNouvelEtablissement() {
                     value={telephone}
                     onChange={(e) => setTelephone(e.target.value)}
                     style={getInputStyle('telephone', telephone)}
+                    disabled={enChargement}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#3b82f6'
+                      e.target.style.boxShadow = '0 0 0 4px rgba(59, 130, 246, 0.1)'
+                      e.target.style.transform = 'translateY(-1px)'
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#e2e8f0'
+                      e.target.style.boxShadow = 'none'
+                      e.target.style.transform = 'translateY(0)'
+                    }}
+                  />
+                </div>
+                <div style={styles.fieldGroup}>
+                  <label htmlFor="email" style={styles.label}>
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="contact@etablissement.fr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={getInputStyle('email', email)}
                     disabled={enChargement}
                     onFocus={(e) => {
                       e.target.style.borderColor = '#3b82f6'

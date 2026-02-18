@@ -40,6 +40,26 @@ export function CartePersonnelRectoVerso({
   const emailContact = personnel.email || etablissement.email
   const telephoneContact = personnel.telephone || etablissement.telephone
   const siteContact = etablissement.siteWeb
+  // Utiliser l'établissement rattaché au personnel si disponible
+  const etabAffiche = personnel.etablissement ?? etablissement
+  // Support pour différents noms possibles des champs date/lieu/nationalité
+  const dateNaissanceRaw: string | undefined =
+    (personnel as any).dateNaissance ??
+    (personnel as any).date_naissance ??
+    (personnel as any).birthDate ??
+    (personnel as any).birthdate ??
+    undefined
+
+  const lieuNaissanceRaw: string | undefined =
+    (personnel as any).lieuNaissance ??
+    (personnel as any).lieu_naissance ??
+    (personnel as any).placeOfBirth ??
+    undefined
+
+  const nationaliteRaw: string | undefined =
+    (personnel as any).nationalite ??
+    (personnel as any).nationality ??
+    undefined
 
   useEffect(() => {
     if (avecQrCode) {
@@ -73,12 +93,12 @@ export function CartePersonnelRectoVerso({
       {/* Bandeau supérieur institutionnel */}
       <div
         style={{
-          height: '28px',
+          height: '24px',
           background: `linear-gradient(90deg, ${etablissement.couleur} 0%, ${etablissement.couleur}80 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 12px',
+          padding: '0 10px',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -124,24 +144,24 @@ export function CartePersonnelRectoVerso({
 
       {/* Contenu principal */}
       <div style={{ 
-        padding: '10px 12px', 
+        padding: '8px 13px', 
         display: 'flex', 
-        gap: '10px', 
-        height: 'calc(100% - 28px)',
+        gap: '8px', 
+        height: 'calc(100% - 24px)',
         alignItems: 'stretch'
       }}>
         {/* Photo et infos de base */}
         <div style={{ 
           display: 'flex', 
           flexDirection: 'column', 
-          gap: '8px', 
+          gap: '6px', 
           flexShrink: 0,
-          width: '65px'
+          width: '66px'
         }}>
           <div
             style={{
-              width: '60px',
-              height: '70px',
+              width: '56px',
+              height: '54px',
               borderRadius: '6px',
               overflow: 'hidden',
               border: '2px solid #e2e8f0',
@@ -152,8 +172,8 @@ export function CartePersonnelRectoVerso({
             <Image
               src={personnel.photo || '/placeholder.svg?height=75&width=60'}
               alt={`${personnel.prenom} ${personnel.nom}`}
-              width={60}
-              height={70}
+              width={56}
+              height={64}
               style={{
                 objectFit: 'cover',
                 objectPosition: 'center',
@@ -168,7 +188,7 @@ export function CartePersonnelRectoVerso({
                 fontWeight: '700',
                 color: '#64748b',
                 letterSpacing: '0.5px',
-                marginBottom: '2px',
+                marginBottom: '1px',
               }}
             >
               ID PERSONNEL
@@ -198,30 +218,31 @@ export function CartePersonnelRectoVerso({
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
-          gap: '6px'
+          gap: '2px',
+          overflow: 'hidden'
         }}>
           {/* Nom et prénom */}
-          <div>
+          <div style={{ flexShrink: 0 }}>
             <div style={{ 
               fontSize: '9px', 
               fontWeight: '800', 
               color: '#0f172a', 
-              lineHeight: '1',
-              marginBottom: '2px'
+              lineHeight: '0.9',
+              marginBottom: '0px'
             }}>
               {personnel.prenom.toUpperCase()}
             </div>
             <div style={{ 
-              fontSize: '11px', 
+              fontSize: '9px', 
               fontWeight: '900', 
               color: '#0f172a', 
-              lineHeight: '1.1',
-              marginBottom: '3px'
+              lineHeight: '1',
+              marginBottom: '0px'
             }}>
               {personnel.nom.toUpperCase()}
             </div>
             <div style={{ 
-              fontSize: '10px', 
+              fontSize: '7px', 
               color: '#475569', 
               fontWeight: '600',
               maxWidth: '100%',
@@ -234,23 +255,23 @@ export function CartePersonnelRectoVerso({
           </div>
 
           {/* Rôle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
             <span style={{ 
-              fontSize: '9px', 
+              fontSize: '8px', 
               color: '#64748b', 
               fontWeight: '600',
-              minWidth: '35px'
+              minWidth: '20px'
             }}>
               Rôle :
             </span>
             <span
               style={{
-                fontSize: '10px',
+                fontSize: '7px',
                 fontWeight: '700',
                 color: '#1e293b',
                 background: `linear-gradient(90deg, ${etablissement.couleur}20, ${etablissement.couleur}10)`,
-                padding: '3px 10px',
-                borderRadius: '12px',
+                padding: '1px 4px',
+                borderRadius: '8px',
                 border: `1px solid ${etablissement.couleur}30`,
                 maxWidth: '100%',
                 overflow: 'hidden',
@@ -262,28 +283,77 @@ export function CartePersonnelRectoVerso({
             </span>
           </div>
 
+          {/* Date, lieu, nationalité */}
+          {(dateNaissanceRaw || lieuNaissanceRaw || nationaliteRaw) && (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '0px', 
+              marginTop: '0px',
+              fontSize: '10px',
+              flexShrink: 0,
+              lineHeight: '1'
+            }}>
+              {dateNaissanceRaw && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                  <span style={{ color: '#64748b', fontWeight: '700', minWidth: '18px', flexShrink: 0 }}>
+                    Né :
+                  </span>
+                  <span style={{ color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {new Date(dateNaissanceRaw).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              {lieuNaissanceRaw && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                  <span style={{ color: '#64748b', fontWeight: '700', minWidth: '18px', flexShrink: 0 }}>
+                    À :
+                  </span>
+                  <span style={{ color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {lieuNaissanceRaw}
+                  </span>
+                </div>
+              )}
+              {nationaliteRaw && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                  <span style={{ color: '#64748b', fontWeight: '700', minWidth: '18px', flexShrink: 0 }}>
+                    NATIONALITÉ :
+                  </span>
+                  <span style={{ color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {nationaliteRaw}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Contact */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column', 
-            gap: '4px',
-            marginTop: '2px'
+            gap: '0px',
+            marginTop: '0px',
+            flexShrink: 0,
+            lineHeight: '1'
           }}>
             {telephoneContact && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
                 <span style={{ 
-                  fontSize: '9px', 
+                  fontSize: '8px', 
                   color: '#64748b', 
-                  fontWeight: '600',
-                  minWidth: '35px'
+                  fontWeight: '700',
+                  minWidth: '12px',
+                  flexShrink: 0
                 }}>
-                  Tél :
+                  TEL:
                 </span>
                 <span style={{ 
-                  fontSize: '10px', 
+                  fontSize: '9px', 
                   fontWeight: '600', 
                   color: '#1e293b',
-                  letterSpacing: '0.3px'
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
                   {telephoneContact}
                 </span>
@@ -291,21 +361,23 @@ export function CartePersonnelRectoVerso({
             )}
 
             {emailContact && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
                 <span style={{ 
                   fontSize: '9px', 
                   color: '#64748b', 
-                  fontWeight: '600',
-                  minWidth: '35px'
+                  fontWeight: '700',
+                  minWidth: '12px',
+                  flexShrink: 0
                 }}>
-                  Email :
+                  EMAIL:
                 </span>
                 <span style={{ 
-                  fontSize: '8.5px', 
+                  fontSize: '10px', 
                   fontWeight: '600', 
                   color: '#3b82f6',
-                  wordBreak: 'break-all',
-                  lineHeight: '1.2'
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
                   {emailContact}
                 </span>
@@ -323,7 +395,7 @@ export function CartePersonnelRectoVerso({
             justifyContent: 'center',
             gap: '3px',
             flexShrink: 0,
-            width: '50px'
+            width: '46px'
           }}>
             <div
               style={{
@@ -337,8 +409,8 @@ export function CartePersonnelRectoVerso({
               <Image
                 src={qrCodeUrl}
                 alt="QR Code de vérification"
-                width={42}
-                height={42}
+                width={38}
+                height={38}
               />
             </div>
             <div style={{ 
@@ -375,29 +447,29 @@ export function CartePersonnelRectoVerso({
       </div>
 
       {/* Code-barres en bas */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '8px',
-          left: '12px',
-          right: '12px',
-          height: '16px',
-          background: '#f8fafc',
-          border: '1px solid #e2e8f0',
-          borderRadius: '3px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontFamily: "'Courier New', monospace",
-          fontSize: '9px',
-          fontWeight: '600',
-          color: '#475569',
-          letterSpacing: '1px',
-          padding: '0 4px'
-        }}
-      >
-        {(safeId.slice(-12) || 'PERS' + safeId.slice(-8) || '').toUpperCase()}
-      </div>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '6px',
+              left: '12px',
+              right: '12px',
+              height: '14px',
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: "'Courier New', monospace",
+              fontSize: '9px',
+              fontWeight: '600',
+              color: '#475569',
+              letterSpacing: '1px',
+              padding: '0 4px'
+            }}
+          >
+            {(safeId.slice(-12) || 'PERS' + safeId.slice(-8) || '').toUpperCase()}
+          </div>
     </div>
   )
 
@@ -488,31 +560,28 @@ export function CartePersonnelRectoVerso({
           color: '#334155',
           borderBottom: '1px solid #e2e8f0',
           marginBottom: '2px'
-        }}>
-          CONTACT
-        </div>
+        }} />
 
         <div style={{ fontSize: '6px', lineHeight: '1.25' }}>
           <div style={{ display: 'flex', gap: '4px' }}>
             <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Adresse :</span>
-            <span>{etablissement.adresse}</span>
+            <span>{etabAffiche.adresse || 'Non renseignée'}</span>
           </div>
 
-          {telephoneContact && (
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Tel :</span>
-              <span style={{ fontWeight: '600' }}>{telephoneContact}</span>
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Tel :</span>
+            <span style={{ fontWeight: '600' }}>{etabAffiche.telephone || '—'}</span>
+          </div>
 
-          {emailContact && (
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Email :</span>
-              <span style={{ fontWeight: '600', color: '#2563eb', wordBreak: 'break-all' }}>
-                {emailContact}
-              </span>
-            </div>
-          )}
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Email :</span>
+            <span style={{ fontWeight: '600', color: '#2563eb', wordBreak: 'break-all' }}>{etabAffiche.email || '—'}</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <span style={{ minWidth: '34px', fontWeight: '700', color: '#64748b' }}>Année :</span>
+            <span style={{ fontWeight: '600' }}>{etabAffiche.anneeScolaire || '—'}</span>
+          </div>
         </div>
       </div>
 
@@ -533,9 +602,11 @@ export function CartePersonnelRectoVerso({
           lineHeight: '1.3',
           color: '#dc2626'
         }}>
-          <div>• Carte personnelle et non transférable</div>
-          <div>• Présenter à l’entrée</div>
-          <div>• Valable {etablissement.anneeScolaire}</div>
+         <div>• Carte personnelle et incessible</div>
+            <div>• À présenter à toute demande</div>
+            <div>• Perte : informer l'administration</div>
+            <div>• Toute falsification est sanctionnée</div>
+            <div>• Conserver en bon état</div>
         </div>
       </div>
     </div>
@@ -545,41 +616,66 @@ export function CartePersonnelRectoVerso({
   flex: 2,
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'flex-end',
+  justifyContent: 'flex-start',
   alignItems: 'center',
-  borderLeft: '1px dashed #cbd5e1',
-  paddingLeft: '6px'
+  borderLeft: '1px solid #cbd5e1',
+  paddingLeft: '4px',
+  gap: '2px',
+  minHeight: 0
 }}>
   <div style={{
     fontSize: '6px',
-    fontWeight: '700',
-    color: '#64748b',
-    marginBottom: '4px'
+    fontWeight: '800',
+    color: '#334155',
+    textAlign: 'center',
+    letterSpacing: '0.3px'
   }}>
-    LA DIRECTION
+    SIGNATURE
   </div>
-
-    {etablissement.signature ? (
-    <Image
-      src={etablissement.signature}
-      alt="Signature"
-      width={130}
-      height={92}
-      style={{
-        objectFit: 'contain',
-        marginBottom: '8px'
-      }}
-    />
+  
+  {etablissement.logo ? (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '2px',
+      border: '1px solid #cbd5e1',
+      borderRadius: '2px',
+      background: 'rgba(255, 255, 255, 0.9)',
+      flex: 1,
+      minHeight: '25px',
+      width: '100%',
+      overflow: 'hidden'
+    }}>
+      <Image
+        src={etablissement.logo}
+        alt="Logo de l'établissement"
+        width={50}
+        height={35}
+        style={{
+          objectFit: 'contain',
+          maxWidth: '100%',
+          maxHeight: '100%'
+        }}
+        unoptimized
+      />
+    </div>
   ) : (
     <div style={{
-      width: '90px',
-      height: '26px',
-      borderBottom: '8px solid #94a3b8',
-      marginBottom: '6px'
-    }} />
+      fontSize: '6px',
+      color: '#cbd5e1',
+      textAlign: 'center',
+      flex: 1,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      borderBottom: '1px solid #cbd5e1',
+      padding: '2px 0'
+    }}>
+      ___________
+    </div>
   )}
-
- 
 </div>
 
   </div>

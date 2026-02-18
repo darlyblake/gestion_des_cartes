@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useNotification } from '@/components/notification'
 import Image from 'next/image'
 import { ChargementPage } from '@/components/chargement'
-import { ArrowLeft, Save, X, Palette, Building2, MapPin, Phone, Calendar, Type, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, X, Palette, Building2, MapPin, Phone, Mail, Calendar, Type, Image as ImageIcon } from 'lucide-react'
 import type { Etablissement } from '@/lib/types'
 
 // Couleurs prédéfinies
@@ -122,23 +122,32 @@ export default function PageModifierEtablissement() {
     }
 
     try {
-      // Ici vous pourriez uploader l'image vers votre serveur
-      // Pour l'exemple, on utilise un Data URL
-      const reader = new FileReader()
-      reader.onload = (event) => {
+      const formData = new FormData()
+      formData.append('image', file)
+      formData.append('type', 'logo')
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+      if (data.succes) {
         setEtablissement(prev => ({ 
           ...prev, 
-          logo: event.target?.result as string 
+          logo: data.url
         }))
+        afficherNotification('succes', 'Logo uploadé avec succès')
+      } else {
+        afficherNotification('erreur', data.erreur || 'Erreur lors de l\'upload')
       }
-      reader.readAsDataURL(file)
     } catch (error) {
       console.error('Erreur lors du chargement du logo:', error)
       afficherNotification('erreur', 'Erreur lors du chargement du logo')
     }
   }
 
-  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSignatureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -153,19 +162,15 @@ export default function PageModifierEtablissement() {
       return
     }
 
-    try {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        setEtablissement(prev => ({ 
-          ...prev, 
-          signature: event.target?.result as string 
-        }))
-      }
-      reader.readAsDataURL(file)
-    } catch (error) {
-      console.error('Erreur lors du chargement de la signature:', error)
-      afficherNotification('erreur', 'Erreur lors du chargement de la signature')
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setEtablissement(prev => ({ 
+        ...prev, 
+        signature: event.target?.result as string 
+      }))
+      afficherNotification('succes', 'Signature chargée')
     }
+    reader.readAsDataURL(file)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,6 +192,7 @@ export default function PageModifierEtablissement() {
         nom: etablissement.nom?.trim() || '',
         adresse: etablissement.adresse?.trim() || '',
         telephone: etablissement.telephone?.trim() || '',
+        email: etablissement.email?.trim() || '',
         anneeScolaire: etablissement.anneeScolaire?.trim() || '',
         couleur: etablissement.couleur || COULEURS_PREDEFINIES[0],
         police: etablissement.police || POLICES_DISPONIBLES[0],
@@ -570,6 +576,22 @@ export default function PageModifierEtablissement() {
                       onChange={handleChange}
                       placeholder="01 42 36 58 96"
                       style={getInputStyle('telephone', etablissement.telephone)}
+                      disabled={enSoumission}
+                    />
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                    <label style={styles.label}>
+                      <Mail size={14} />
+                      Email
+                    </label>
+                    <input
+                      name="email"
+                      value={etablissement.email || ''}
+                      onChange={handleChange}
+                      placeholder="contact@etablissement.fr"
+                      type="email"
+                      style={getInputStyle('email', etablissement.email)}
                       disabled={enSoumission}
                     />
                   </div>

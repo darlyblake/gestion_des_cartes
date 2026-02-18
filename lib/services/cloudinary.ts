@@ -42,19 +42,30 @@ async function uploadImage(
   try {
     configureCloudinary()
 
-    // Créer un stream depuis le buffer
+    // Créer un stream depuis le buffer avec timeout plus long
     const result = await new Promise<{ public_id: string; secure_url: string }>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Upload Cloudinary timeout après 30 secondes'))
+      }, 30000) // 30 secondes de timeout
+
       const stream = cloudinary.uploader.upload_stream(
         {
           folder,
           public_id: filename.split('.')[0],
           resource_type: 'auto',
+          timeout: 30000, // Augmenter le timeout à 30s
         },
         (error, result) => {
+          clearTimeout(timeoutId)
           if (error) reject(error)
           else resolve(result as { public_id: string; secure_url: string })
         }
       )
+
+      stream.on('error', (error) => {
+        clearTimeout(timeoutId)
+        reject(error)
+      })
 
       stream.end(buffer)
     })

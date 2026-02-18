@@ -11,9 +11,8 @@ const nextConfig = {
   
   // ✅ Optimiser les images pour production
   images: {
-    unoptimized: false,
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 an
+    unoptimized: true, // ✅ Désactiver l'optimisation pour Cloudinary (erreurs 500)
+    dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         protocol: 'https',

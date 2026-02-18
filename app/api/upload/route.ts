@@ -6,6 +6,11 @@
 import { NextResponse } from 'next/server'
 import { uploadImage } from '@/lib/services/cloudinary'
 
+// Configuration du timeout pour les uploads longs
+export const config = {
+  maxDuration: 60, // 60 secondes pour les uploads Vercel
+}
+
 // Simple rate limiter in-memory (per IP) — pour production utilisez un store distribué (Redis)
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 const RATE_LIMIT_MAX = 30 // max requests per window per IP
@@ -86,7 +91,9 @@ export async function POST(requete: Request) {
     const buffer = Buffer.from(bytes)
 
     // Déterminer le dossier Cloudinary selon le type
-    const folder = type === 'logo' ? 'school-card/logos' : 'school-card/photos'
+    let folder = 'school-card/photos'
+    if (type === 'logo') folder = 'school-card/logos'
+    if (type === 'signature') folder = 'school-card/signatures'
 
     // Upload vers Cloudinary
     const url = await uploadImage(buffer, fichier.name, folder)

@@ -91,6 +91,7 @@ export interface Eleve {
   prenom: string
   dateNaissance?: Date
   lieuNaissance: string
+  nationalite?: string
   sexe: Sexe
   photo?: string
   matricule?: string
@@ -108,6 +109,7 @@ export interface CreerEleveDonnees {
   prenom: string
   dateNaissance: string
   lieuNaissance: string
+  nationalite?: string
   sexe: Sexe
   photo?: string
   classeId: string
@@ -138,6 +140,9 @@ export interface Personnel {
   email?: string
   telephone?: string
   photo?: string
+  dateNaissance?: string
+  lieuNaissance?: string
+  nationalite?: string
   etablissementId?: string
   etablissement?: Etablissement
   creeLe?: Date
@@ -155,6 +160,9 @@ export interface CreerPersonnelDonnees {
   email?: string
   telephone?: string
   photo?: string
+  dateNaissance?: string
+  lieuNaissance?: string
+  nationalite?: string
   etablissementId: string
 }
 

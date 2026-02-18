@@ -80,6 +80,25 @@ export function CarteModerneRectoVerso({
 
   const couleurClaire = eclaircirCouleur(etablissement.couleur, 0.3)
 
+  // Support pour différents noms possibles des champs date/lieu/nationalité
+  const dateNaissanceRaw: string | undefined =
+    (eleve as any).dateNaissance ??
+    (eleve as any).date_naissance ??
+    (eleve as any).birthDate ??
+    (eleve as any).birthdate ??
+    undefined
+
+  const lieuNaissanceRaw: string | undefined =
+    (eleve as any).lieuNaissance ??
+    (eleve as any).lieu_naissance ??
+    (eleve as any).placeOfBirth ??
+    undefined
+
+  const nationaliteRaw: string | undefined =
+    (eleve as any).nationalite ??
+    (eleve as any).nationality ??
+    undefined
+
   const renderRecto = () => (
     <div 
       className="carte-scolaire carte-moderne"
@@ -179,7 +198,7 @@ export function CarteModerneRectoVerso({
                 textShadow: '0 1px 2px rgba(0,0,0,0.1)',
               }}
             >
-              {eleve.prenom} {eleve.nom}
+              {`${eleve.prenom ?? ''} ${eleve.nom ?? ''}`.trim()}
             </div>
 
             <div style={{ fontSize: '11px', opacity: 0.9, lineHeight: '1.8' }}>
@@ -193,7 +212,7 @@ export function CarteModerneRectoVerso({
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <span style={{ opacity: 0.7 }}>Né(e) le</span>
-                <span>{formaterDate(eleve.dateNaissance)}</span>
+                <span>{formaterDate(dateNaissanceRaw)}</span>
               </div>
             </div>
           </div>

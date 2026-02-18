@@ -24,6 +24,7 @@ import { useNotification } from '@/components/notification'
 import { Download, Printer, CreditCard, RefreshCw, FileText, Users, IdCard } from 'lucide-react'
 import {
   recupererElevesList,
+  recupererEleve,
   recupererClassesList,
   recupererEtablissementsList,
   recupererPersonnelList,
@@ -138,10 +139,28 @@ function ContenuPageCartes() {
   }, [afficherNotification])
 
   // Récupération de l'élève sélectionné avec ses détails
-  const eleve = useMemo(
-    () => eleves.find((e) => resolveId(e) === eleveSelectionne),
-    [eleveSelectionne, eleves],
-  )
+  const [eleveComplet, setEleveComplet] = useState<Eleve | undefined>(undefined)
+  
+  // Charger l'élève complet quand la sélection change
+  useEffect(() => {
+    if (eleveSelectionne && modeAffichage === 'eleve') {
+      const chargerEleve = async () => {
+        try {
+          const reponse = await recupererEleve(eleveSelectionne)
+          if (reponse.succes && reponse.donnees) {
+            setEleveComplet(reponse.donnees)
+          }
+        } catch (err) {
+          console.error('Erreur lors du chargement de l\'élève:', err)
+        }
+      }
+      chargerEleve()
+    } else if (modeAffichage !== 'eleve') {
+      setEleveComplet(undefined)
+    }
+  }, [eleveSelectionne, modeAffichage])
+
+  const eleve = eleveComplet || eleves.find((e) => resolveId(e) === eleveSelectionne)
 
   const classe = useMemo(() => {
     if (eleve) {

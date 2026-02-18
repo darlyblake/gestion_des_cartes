@@ -62,6 +62,25 @@ function CarteRecto({
     couleurFond: 'transparent'
   })
 
+  // Support pour différents noms possibles des champs date/lieu/nationalité
+  const dateNaissanceRaw: string | undefined =
+    (eleve as any).dateNaissance ??
+    (eleve as any).date_naissance ??
+    (eleve as any).birthDate ??
+    (eleve as any).birthdate ??
+    undefined
+
+  const lieuNaissanceRaw: string | undefined =
+    (eleve as any).lieuNaissance ??
+    (eleve as any).lieu_naissance ??
+    (eleve as any).placeOfBirth ??
+    undefined
+
+  const nationaliteRaw: string | undefined =
+    (eleve as any).nationalite ??
+    (eleve as any).nationality ??
+    undefined
+
   return (
     <div 
       className="carte-scolaire carte-recto"
@@ -184,7 +203,7 @@ function CarteRecto({
               marginBottom: '1px',
               letterSpacing: '0.3px'
             }}>
-              {eleve.prenom.toUpperCase()}
+              {(eleve.prenom ?? '').toString().toUpperCase()}
             </div>
             <div style={{ 
               fontSize: '11px', 
@@ -193,7 +212,7 @@ function CarteRecto({
               lineHeight: '1.1',
               marginBottom: '2px'
             }}>
-              {eleve.nom.toUpperCase()}
+              {(eleve.nom ?? '').toString().toUpperCase()}
             </div>
           </div>
 
@@ -220,7 +239,7 @@ function CarteRecto({
                 fontFamily: "'Courier New', monospace",
                 letterSpacing: '0.5px'
               }}>
-                {eleve.matricule}
+                {eleve.matricule ?? '-'}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -233,7 +252,7 @@ function CarteRecto({
                 Classe :
               </span>
               <span style={{ fontWeight: '700' }}>
-                {classe.nom} {classe.niveau}
+                {(classe?.nom ?? '-') + (classe?.niveau ? ` - ${classe.niveau}` : '')}
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -245,9 +264,9 @@ function CarteRecto({
               }}>
                 Né(e) le :
               </span>
-              <span>{formaterDate(eleve.dateNaissance)}</span>
+              <span>{formaterDate(dateNaissanceRaw)}</span>
             </div>
-            {eleve.lieuNaissance && (
+            {lieuNaissanceRaw && (
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <span style={{ 
                   color: '#9ca3af', 
@@ -262,7 +281,7 @@ function CarteRecto({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap'
                 }}>
-                  {eleve.lieuNaissance}
+                  {lieuNaissanceRaw}
                 </span>
               </div>
             )}
@@ -277,6 +296,25 @@ function CarteRecto({
               </span>
               <span>{eleve.sexe === 'M' ? 'Masculin' : 'Féminin'}</span>
             </div>
+            {nationaliteRaw && (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span style={{ 
+                  color: '#9ca3af', 
+                  minWidth: '45px',
+                  fontSize: '7px',
+                  fontWeight: '600'
+                }}>
+                  Nationalité :
+                </span>
+                <span style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {nationaliteRaw}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -365,7 +403,7 @@ function CarteRecto({
 
 /**
  * Composant Verso de la carte (VERSION AMÉLIORÉE)
- * Contient : règlement, coordonnées établissement, signature
+ * Contient : règlement, coordonnées établissement, logo
  */
 function CarteVerso({
   etablissement,
@@ -387,7 +425,7 @@ function CarteVerso({
         border: '1px solid #e5e7eb',
         display: 'flex',
         flexDirection: 'column',
-        fontSize: '7px',
+        fontSize: '9px',
       }}
     >
       {/* En-tête */}
@@ -416,185 +454,158 @@ function CarteVerso({
           padding: '8px 10px',
           color: '#374151',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          gap: '8px'
+          gap: '8px',
+          fontSize: '9px',
+          lineHeight: '1.3'
         }}
       >
-        {/* Règlement */}
-        <div>
-          <div
-            style={{
-              fontWeight: 800,
-              color: couleur,
-              marginBottom: '4px',
-              fontSize: '8px',
-              borderBottom: '1px solid #e5e7eb',
-              paddingBottom: '2px'
-            }}
-          >
-            RÈGLEMENT
+        {/* Colonne gauche */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          
+          {/* Contact */}
+          <div>
+            <div
+              style={{
+                fontWeight: 800,
+                color: couleur,
+                marginBottom: '2px',
+                fontSize: '7px',
+                borderBottom: `1px solid #e5e7eb`,
+                paddingBottom: '1px'
+              }}
+            >
+              CONTACT
+            </div>
+            <div style={{ fontSize: '9px', lineHeight: '1.2' }}>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                <span style={{ fontWeight: 700, minWidth: '24px' }}>Tél:</span>
+                <span>{etablissement.telephone?.substring(0, 24) || '—'}</span>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', fontSize: '9px' }}>
+                <span style={{ fontWeight: 700, minWidth: '24px' }}>Email:</span>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {etablissement.email || '—'}
+                </span>
+              </div>
+            </div>
           </div>
-          <div
-            style={{
-              lineHeight: '1.3',
-              fontSize: '6.5px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '2px'
-            }}
-          >
-            <div>• Carte personnelle et incessible</div>
+
+          {/* Règlement */}
+          <div>
+            <div
+              style={{
+                fontWeight: 800,
+                color: couleur,
+                marginBottom: '2px',
+                fontSize: '7px',
+                borderBottom: `1px solid #EBE5E5`,
+                paddingBottom: '1px'
+              }}
+            >
+              RÈGLEMENT
+            </div>
+            <div style={{ fontSize: '9px', lineHeight: '1.5' }}>
+              <div>• Carte personnelle et incessible</div>
             <div>• À présenter à toute demande</div>
             <div>• Perte : informer l'administration</div>
             <div>• Toute falsification est sanctionnée</div>
             <div>• Conserver en bon état</div>
+            </div>
           </div>
         </div>
 
-        {/* Coordonnées */}
-        <div>
-          <div
-            style={{
-              fontWeight: 800,
-              color: couleur,
-              marginBottom: '4px',
-              fontSize: '8px',
-              borderBottom: '1px solid #e5e7eb',
-              paddingBottom: '2px'
-            }}
-          >
-            ÉTABLISSEMENT
-          </div>
-          <div style={{ 
-            lineHeight: '1.3',
-            fontSize: '7px'
-          }}>
-            <div style={{ 
-              fontWeight: 700,
-              fontSize: '7.5px',
-              marginBottom: '1px'
-            }}>
-              {etablissement.nom}
-            </div>
-            <div style={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              marginBottom: '1px'
-            }}>
-              {etablissement.adresse}
-            </div>
-            {etablissement.telephone && (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span style={{ 
-                  minWidth: '20px',
-                  color: '#9ca3af'
-                }}>
-                  Tél :
-                </span>
-                <span style={{ fontWeight: 600 }}>
-                  {etablissement.telephone}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bas : cachet + signature + validité */}
+        {/* Colonne droite - Logo */}
         <div
           style={{
+            flex: 0.7,
             display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            marginTop: '4px',
-            paddingTop: '6px',
-            borderTop: '1px dashed #e5e7eb'
+            flexDirection: 'column',
+            alignItems: 'center',
+            borderLeft: `1px solid #e5e7eb`,
+            paddingLeft: '6px',
+            justifyContent: 'flex-start',
+            gap: '2px'
           }}
         >
-          {/* Cachet */}
-          <div style={{ textAlign: 'center', width: '50px' }}>
+          <div
+            style={{
+              fontSize: '6px',
+              fontWeight: 800,
+              color: couleur,
+              textAlign: 'center',
+              letterSpacing: '0.3px'
+            }}
+          >
+            LA DIRECTION
+          </div>
+          
+          {etablissement.logo ? (
             <div
               style={{
-                width: '28px',
-                height: '28px',
-                border: `2px dashed ${couleur}60`,
-                borderRadius: '50%',
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '5px',
-                color: '#9ca3af',
-                fontWeight: 600,
-                margin: '0 auto 2px'
+                alignItems: 'center',
+                padding: '2px',
+                border: `1px solid #e5e7eb`,
+                borderRadius: '2px',
+                background: '#fafafa',
+                flex: 1,
+                minHeight: '20px',
+                minWidth: '30px',
+                overflow: 'hidden'
               }}
             >
-              CACHET
-            </div>
-          </div>
-
-          {/* Signature */}
-          <div style={{ textAlign: 'center', flex: 1, maxWidth: '70px' }}>
-            {etablissement.signature ? (
-              <Image
-                src={etablissement.signature}
-                alt="Signature du Directeur"
-                width={60}
-                height={20}
+              <img
+                src={etablissement.logo}
+                alt="Logo"
                 style={{
                   objectFit: 'contain',
-                  margin: '0 auto 2px',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  width: 'auto',
+                  height: 'auto'
                 }}
               />
-            ) : (
-              <div
-                style={{
-                  width: '60px',
-                  height: '20px',
-                  borderBottom: '2px dashed #9ca3af',
-                  margin: '0 auto 2px',
-                }}
-              />
-            )}
+            </div>
+          ) : (
             <div
               style={{
                 fontSize: '6px',
-                color: '#6b7280',
-                fontWeight: 700,
-                letterSpacing: '0.3px'
+                color: '#9ca3af',
+                textAlign: 'center',
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderBottom: `1px dashed #cbd5e1`,
+                padding: '2px 0',
+                minHeight: '20px'
               }}
             >
-              LE DIRECTEUR
+              —
             </div>
-          </div>
+          )}
+        </div>
+      </div>
 
-          {/* Validité */}
-          <div style={{ 
-            textAlign: 'right', 
-            width: '50px',
-            fontSize: '6.5px'
-          }}>
-            <div style={{ 
-              color: '#9ca3af',
-              fontWeight: 600,
-              marginBottom: '1px'
-            }}>
-              VALIDE JUSQU'AU
-            </div>
-            <div style={{ 
-              fontWeight: 800, 
-              color: couleur,
-              fontSize: '7px'
-            }}>
-              {/* Utilisation d'une fonction safe pour extraire l'année de fin */}
-              31/08/{(() => {
-                const annee = etablissement.anneeScolaire
-                if (!annee || typeof annee !== 'string') return '2025'
-                const parts = annee.split('-')
-                return parts.length >= 2 ? parts[1] : '2025'
-              })()}
-            </div>
-          </div>
+      {/* Pied */}
+      <div
+        style={{
+          padding: '6px 8px',
+          borderTop: `1px solid #e5e7eb`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '8px',
+          color: '#6b7280',
+          background: '#f9fafb'
+        }}
+      >
+        <div style={{ fontWeight: 700 }}>
+          ANNÉE: {etablissement.anneeScolaire?.split('-')[0] || '2025'}
+        </div>
+        <div style={{ fontWeight: 700 }}>
+          VALIDE: 31/08/{etablissement.anneeScolaire?.split('-')[1] || '2026'}
         </div>
       </div>
 
@@ -602,9 +613,9 @@ function CarteVerso({
       <div 
         style={{
           position: 'absolute',
-          bottom: '4px',
+          bottom: '6px',
           right: '8px',
-          fontSize: '6px',
+          fontSize: '8px',
           color: '#9ca3af',
           fontWeight: '700',
           letterSpacing: '0.5px'
