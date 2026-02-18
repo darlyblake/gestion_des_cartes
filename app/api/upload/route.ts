@@ -6,10 +6,9 @@
 import { NextResponse } from 'next/server'
 import { uploadImage } from '@/lib/services/cloudinary'
 
-// Configuration du timeout pour les uploads longs
-export const config = {
-  maxDuration: 60, // 60 secondes pour les uploads Vercel
-}
+// NOTE: `maxDuration` n'est pas une propriété reconnue par Next.js route config.
+// La gestion du timeout se fait côté plateforme (Vercel) ou via `vercel.json`.
+// Nous retirons cet export pour éviter l'avertissement de compilation.
 
 // Simple rate limiter in-memory (per IP) — pour production utilisez un store distribué (Redis)
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute

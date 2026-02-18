@@ -82,8 +82,13 @@ export default function PageNouvelleClasse() {
   useEffect(() => {
     async function chargerEtablissements() {
       try {
-        const etablissements = await recupererEtablissementsList({ projection: 'light' })
-        setEtablissements(etablissements)
+        const reponse = await recupererEtablissementsList({ projection: 'light' })
+        if (reponse.succes && reponse.donnees) {
+          setEtablissements(reponse.donnees)
+        } else {
+          console.error('Erreur API établissements:', reponse.erreur)
+          afficherNotification('erreur', reponse.erreur || 'Erreur lors du chargement des établissements')
+        }
       } catch (erreur) {
         console.error('Erreur:', erreur)
         afficherNotification('erreur', 'Erreur lors du chargement des établissements')

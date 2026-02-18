@@ -20,10 +20,12 @@ export function TestSelecteur() {
   const [selectedId, setSelectedId] = useState('')
 
   useEffect(() => {
-    recupererEtablissementsList({ projection: 'light' }).then((etabs) => {
-      setEtablissements(etabs)
-      if (etabs.length > 0) {
-        setSelectedId(etabs[0].id || '')
+    recupererEtablissementsList({ projection: 'light' }).then((reponse) => {
+      if (reponse.succes && reponse.donnees) {
+        setEtablissements(reponse.donnees)
+        if (reponse.donnees.length > 0) {
+          setSelectedId(reponse.donnees[0].id || '')
+        }
       }
     })
   }, [])

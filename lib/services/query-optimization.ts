@@ -162,17 +162,18 @@ export async function executeQueryWithTimeout<T>(
  */
 export function denormalizeDocuments<T extends Record<string, unknown>>(
   documents: T[],
-  inclusionMap: Record<string, keyof T[]>
+  inclusionMap: Record<string, (keyof T)[]>
 ) {
   return documents.map((doc) => {
-    const result = { ...doc }
+    const result: Record<string, unknown> = { ...(doc as Record<string, unknown>) }
     Object.entries(inclusionMap).forEach(([key, sourceFields]) => {
       if (sourceFields && Array.isArray(sourceFields)) {
         // Inclure uniquement les champs spécifiés
         const filtered: Record<string, unknown> = {}
         sourceFields.forEach((field) => {
-          if (doc[field] !== undefined) {
-            filtered[field] = doc[field]
+          const value = (doc as any)[field]
+          if (value !== undefined) {
+            filtered[field as string] = value
           }
         })
         result[key] = filtered
