@@ -212,6 +212,7 @@ export async function POST(requete: Request) {
     const rateLimitError = await checkSensitiveRateLimit(requete)
     if (rateLimitError) return rateLimitError
     const donnees: CreerEleveDonnees = await requete.json()
+    console.log('📝 POST /api/eleves: Données reçues =', { nom: donnees.nom, prenom: donnees.prenom, classeId: donnees.classeId })
 
     // Validation des données requises
     if (!donnees.nom || !donnees.prenom || !donnees.dateNaissance || !donnees.classeId) {
@@ -263,6 +264,7 @@ export async function POST(requete: Request) {
     }
 
     const resultat = await elevesCollection.insertOne(nouvelEleve)
+    console.log('✅ POST /api/eleves: insertOne réussi, insertedId =', resultat.insertedId.toString())
     
     // Invalider le cache après création
     invalidateCacheAfterChange('eleve')
@@ -290,7 +292,9 @@ export async function POST(requete: Request) {
       },
       message: 'Élève créé avec succès',
     })
-  } catch (erreur) {
+  } catct msg = erreur instanceof Error ? erreur.message : String(erreur)
+    console.error('❌ POST /api/eleves: Exception levée =', msg)
+    consh (erreur) {
     console.error('Erreur lors de la création de l\'élève:', erreur)
     return NextResponse.json(
       { succes: false, erreur: 'Erreur lors de la création de l\'élève' },

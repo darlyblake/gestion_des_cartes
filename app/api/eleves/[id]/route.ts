@@ -208,8 +208,10 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    console.log('🗑️ DELETE /api/eleves/[id]: id reçu =', id, '| isValid =', ObjectId.isValid(id))
+    
     if (!ObjectId.isValid(id)) {
-      console.warn('Tentative de suppression avec ID invalide:', id)
+      console.warn('❌ Tentative de suppression avec ID invalide:', id)
       return NextResponse.json(
         { succes: false, erreur: 'Identifiant invalide' },
         { status: 400 }
@@ -220,8 +222,11 @@ export async function DELETE(
     const resultat = await elevesCollection.deleteOne({
       _id: new ObjectId(id),
     })
+    
+    console.log('🗑️ DELETE /api/eleves/[id]: deleteOne result =', { deletedCount: resultat.deletedCount })
 
     if (resultat.deletedCount === 0) {
+      console.warn('⚠️ Élève non trouvé pour suppression, id =', id)
       return NextResponse.json(
         { succes: false, erreur: 'Élève non trouvé' },
         { status: 404 }
