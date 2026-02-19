@@ -158,6 +158,7 @@ export async function POST(request: Request) {
     if (rateLimitError) return rateLimitError
 
     const data: CreerPersonnelDonnees = await request.json()
+    console.log('👤 POST /api/personnel: Données reçues =', { nom: data.nom, prenom: data.prenom, role: data.role, etablissementId: data.etablissementId })
 
     // Validation basique
     if (!data.nom || !data.prenom || !data.role || !data.fonction || !data.etablissementId) {
@@ -190,6 +191,7 @@ export async function POST(request: Request) {
     }
 
     const resultat = await personnelCollection.insertOne(nouveauPersonnel)
+    console.log('✅ POST /api/personnel: insertOne réussi, insertedId =', resultat.insertedId.toString())
 
     return NextResponse.json(
       {
@@ -204,6 +206,8 @@ export async function POST(request: Request) {
       { status: 201 }
     )
   } catch (erreur) {
+    const msg = erreur instanceof Error ? erreur.message : String(erreur)
+    console.error('❌ POST /api/personnel: Exception levée =', msg)
     console.error('Erreur lors de la création du personnel:', erreur)
     return NextResponse.json(
       {

@@ -136,14 +136,19 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    console.log('🗑️ DELETE /api/personnel/[id]: id reçu =', id, '| isValid =', ObjectId.isValid(id))
+    
     const { db } = await connectToDatabase()
     const personnelCollection = db.collection('personnel')
 
     const resultat = await personnelCollection.deleteOne({
       _id: new ObjectId(id),
     })
+    
+    console.log('🗑️ DELETE /api/personnel/[id]: deleteOne result =', { deletedCount: resultat.deletedCount })
 
     if (resultat.deletedCount === 0) {
+      console.warn('⚠️ Membre du personnel non trouvé pour suppression, id =', id)
       return Response.json(
         {
           succes: false,
