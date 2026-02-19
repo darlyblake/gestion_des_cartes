@@ -68,19 +68,23 @@ export async function POST(requete: Request) {
       )
     }
 
-    // Validation minimale des variables d'environnement (utilise les mêmes noms que le service)
-    const cloudName = process.env.NOM_CLOUDINAIRE_CLOUD
-    const apiKey = process.env.CLÉ_API_CLOUDINAIRE
-    const apiSecret = process.env.CLOUDINARY_API_SECRET
+    // Prefer canonical ASCII env names and fallback to legacy names
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NOM_CLOUDINAIRE_CLOUD || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.CLOUDINARY_API_KEY || process.env.CLÉ_API_CLOUDINAIRE || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET
 
     if (!cloudName || !apiKey || !apiSecret) {
       console.error('❌ Configuration Cloudinary manquante:', {
+        CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
         NOM_CLOUDINAIRE_CLOUD: !!process.env.NOM_CLOUDINAIRE_CLOUD,
-        CLÉ_API_CLOUDINAIRE: !!process.env.CLÉ_API_CLOUDINAIRE,
+        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+        CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+        'CLÉ_API_CLOUDINAIRE': !!process.env.CLÉ_API_CLOUDINAIRE,
+        NEXT_PUBLIC_CLOUDINARY_API_KEY: !!process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
         CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
       })
       return NextResponse.json(
-        { succes: false, erreur: 'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: NOM_CLOUDINAIRE_CLOUD, CLÉ_API_CLOUDINAIRE, CLOUDINARY_API_SECRET' },
+        { succes: false, erreur: 'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: CLOUDINARY_CLOUD_NAME / NOM_CLOUDINAIRE_CLOUD / NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY / CLÉ_API_CLOUDINAIRE / NEXT_PUBLIC_CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET' },
         { status: 500 }
       )
     }

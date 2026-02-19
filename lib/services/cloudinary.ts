@@ -9,19 +9,30 @@ import { v2 as cloudinary } from 'cloudinary'
  * Configure Cloudinary avec les variables d'environnement
  */
 function configureCloudinary() {
-  const cloudName = process.env.NOM_CLOUDINAIRE_CLOUD
-  const apiKey = process.env.CLÉ_API_CLOUDINAIRE
-  const apiSecret = process.env.CLOUDINARY_API_SECRET
+  // Prefer standard ASCII env names; fall back to legacy/varied names for compatibility
+  const cloudName =
+    process.env.CLOUDINARY_CLOUD_NAME ||
+    process.env.NOM_CLOUDINAIRE_CLOUD ||
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  const apiKey =
+    process.env.CLOUDINARY_API_KEY ||
+    process.env.CLÉ_API_CLOUDINAIRE ||
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_API_SECRET
 
-  console.warn('Configuration Cloudinary:', {
-    cloudName: !!cloudName ? '✓' : '✗',
-    apiKey: !!apiKey ? '✓' : '✗',
-    apiSecret: !!apiSecret ? '✓' : '✗',
+  console.warn('Configuration Cloudinary (presence):', {
+    CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
+    NOM_CLOUDINAIRE_CLOUD: !!process.env.NOM_CLOUDINAIRE_CLOUD,
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
+    'CLÉ_API_CLOUDINAIRE': !!process.env.CLÉ_API_CLOUDINAIRE,
+    NEXT_PUBLIC_CLOUDINARY_API_KEY: !!process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
   })
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error(
-      'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: NOM_CLOUDINAIRE_CLOUD, CLÉ_API_CLOUDINAIRE, CLOUDINARY_API_SECRET'
+      'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: CLOUDINARY_CLOUD_NAME / NOM_CLOUDINAIRE_CLOUD / NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY / CLÉ_API_CLOUDINAIRE / NEXT_PUBLIC_CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET'
     )
   }
 
