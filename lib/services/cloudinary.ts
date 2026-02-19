@@ -9,13 +9,19 @@ import { v2 as cloudinary } from 'cloudinary'
  * Configure Cloudinary avec les variables d'environnement
  */
 function configureCloudinary() {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-  const apiKey = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+  const cloudName = process.env.NOM_CLOUDINAIRE_CLOUD
+  const apiKey = process.env.CLÉ_API_CLOUDINARY
   const apiSecret = process.env.CLOUDINARY_API_SECRET
+
+  console.warn('Configuration Cloudinary:', {
+    cloudName: !!cloudName ? '✓' : '✗',
+    apiKey: !!apiKey ? '✓' : '✗',
+    apiSecret: !!apiSecret ? '✓' : '✗',
+  })
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error(
-      'Les variables d\'environnement Cloudinary ne sont pas configurées'
+      'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: NOM_CLOUDINAIRE_CLOUD, CLÉ_API_CLOUDINARY, CLOUDINARY_API_SECRET'
     )
   }
 

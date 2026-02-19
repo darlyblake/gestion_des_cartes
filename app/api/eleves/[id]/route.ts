@@ -22,6 +22,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { succes: false, erreur: 'Identifiant invalide' },
+        { status: 400 }
+      )
+    }
     const elevesCollection = await getCollection('eleves')
 
     const eleve = await elevesCollection
@@ -84,6 +90,12 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { succes: false, erreur: 'Identifiant invalide' },
+        { status: 400 }
+      )
+    }
     const donnees: ModifierEleveDonnees = await requete.json()
     const elevesCollection = await getCollection('eleves')
     const classesCollection = await getCollection('classes')
@@ -196,6 +208,13 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    if (!ObjectId.isValid(id)) {
+      console.warn('Tentative de suppression avec ID invalide:', id)
+      return NextResponse.json(
+        { succes: false, erreur: 'Identifiant invalide' },
+        { status: 400 }
+      )
+    }
     const elevesCollection = await getCollection('eleves')
 
     const resultat = await elevesCollection.deleteOne({
