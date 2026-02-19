@@ -10,7 +10,7 @@ import { v2 as cloudinary } from 'cloudinary'
  */
 function configureCloudinary() {
   const cloudName = process.env.NOM_CLOUDINAIRE_CLOUD
-  const apiKey = process.env.CLÉ_API_CLOUDINARY
+  const apiKey = process.env.CLÉ_API_CLOUDINAIRE
   const apiSecret = process.env.CLOUDINARY_API_SECRET
 
   console.warn('Configuration Cloudinary:', {
@@ -21,7 +21,7 @@ function configureCloudinary() {
 
   if (!cloudName || !apiKey || !apiSecret) {
     throw new Error(
-      'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: NOM_CLOUDINAIRE_CLOUD, CLÉ_API_CLOUDINARY, CLOUDINARY_API_SECRET'
+      'Configuration Cloudinary manquante. Vérifiez les variables d\'environnement: NOM_CLOUDINAIRE_CLOUD, CLÉ_API_CLOUDINAIRE, CLOUDINARY_API_SECRET'
     )
   }
 
