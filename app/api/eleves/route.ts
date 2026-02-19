@@ -292,9 +292,9 @@ export async function POST(requete: Request) {
       },
       message: 'Élève créé avec succès',
     })
-  } catct msg = erreur instanceof Error ? erreur.message : String(erreur)
+  } catch (erreur) {
+    const msg = erreur instanceof Error ? erreur.message : String(erreur)
     console.error('❌ POST /api/eleves: Exception levée =', msg)
-    consh (erreur) {
     console.error('Erreur lors de la création de l\'élève:', erreur)
     return NextResponse.json(
       { succes: false, erreur: 'Erreur lors de la création de l\'élève' },
