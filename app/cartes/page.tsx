@@ -108,6 +108,21 @@ function ContenuPageCartes() {
   const [enExport, setEnExport] = useState(false)
   const [modeAffichage, setModeAffichage] = useState<'eleve' | 'classe' | 'personnel'>(modeDefaut)
   const [selectOuvert, setSelectOuvert] = useState<'eleve' | 'classe' | 'etablissement' | 'personnel' | null>(null)
+  
+  // Détecter si on est sur mobile
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   window.innerWidth < 768
+      setIsMobile(mobile)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Chargement des données initiales
   useEffect(() => {
@@ -140,7 +155,7 @@ function ContenuPageCartes() {
 
   // Récupération de l'élève sélectionné avec ses détails
   const [eleveComplet, setEleveComplet] = useState<Eleve | undefined>(undefined)
-  
+
   // Charger l'élève complet quand la sélection change
   useEffect(() => {
     if (eleveSelectionne && modeAffichage === 'eleve') {
@@ -265,9 +280,12 @@ function ContenuPageCartes() {
       const html2canvas = (await import('html2canvas')).default
       
       const canvas = await html2canvas(carteRef.current, {
-        scale: 3,
+        scale: 2, // Réduit de 3 à 2 pour éviter les erreurs de mémoire
         useCORS: true,
         backgroundColor: '#ffffff',
+        allowTaint: false,
+        logging: false,
+        removeContainer: true,
         onclone: (doc) => {
           try {
             const win = (doc.defaultView || window) as Window
@@ -286,27 +304,31 @@ function ContenuPageCartes() {
             ]
 
             elements.forEach((el) => {
-              const cs = win.getComputedStyle(el as Element)
-              if (!cs) return
+              try {
+                const cs = win.getComputedStyle(el as Element)
+                if (!cs) return
 
-              for (const prop of propsToCheck) {
-                try {
-                  const val = cs.getPropertyValue(prop)
-                  if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
-                    // override with safe fallbacks
-                    if (prop.includes('background')) {
-                      ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
-                    } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
-                      ;(el as HTMLElement).style.setProperty('color', '#121318')
-                    } else if (prop.includes('border') || prop === 'outline-color') {
-                      ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
-                    } else if (prop === 'box-shadow') {
-                      ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                for (const prop of propsToCheck) {
+                  try {
+                    const val = cs.getPropertyValue(prop)
+                    if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
+                      // override with safe fallbacks
+                      if (prop.includes('background')) {
+                        ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
+                      } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
+                        ;(el as HTMLElement).style.setProperty('color', '#121318')
+                      } else if (prop.includes('border') || prop === 'outline-color') {
+                        ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
+                      } else if (prop === 'box-shadow') {
+                        ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                      }
                     }
+                  } catch {
+                    // ignore individual property errors
                   }
-                } catch {
-                  // ignore inaccessible properties
                 }
+              } catch {
+                // ignore element errors
               }
             })
 
@@ -323,7 +345,7 @@ function ContenuPageCartes() {
               `
               ;(doc.head || doc.body).appendChild(style)
             } catch {
-              // ignore
+              // ignore style creation errors
             }
           } catch (e) {
             // Ne pas bloquer le rendu si l'opération échoue
@@ -341,7 +363,13 @@ function ContenuPageCartes() {
       afficherNotification('succes', 'Carte téléchargée avec succès')
     } catch (erreur) {
       console.error('Erreur:', erreur)
-      afficherNotification('erreur', 'Erreur lors du téléchargement')
+      
+      // Gérer spécifiquement l'erreur de couleur lab()
+      if (erreur instanceof Error && erreur.message.includes('lab')) {
+        afficherNotification('erreur', 'Erreur de couleur incompatible. Veuillez réessayer.')
+      } else {
+        afficherNotification('erreur', 'Erreur lors du téléchargement')
+      }
     } finally {
       setEnExport(false)
     }
@@ -389,9 +417,12 @@ function ContenuPageCartes() {
 
         // Convertir la carte en canvas
         const canvas = await html2canvas(carteElement, {
-          scale: 3,
+          scale: 2, // Réduit de 3 à 2 pour éviter les erreurs de mémoire
           useCORS: true,
           backgroundColor: '#ffffff',
+          allowTaint: false,
+          logging: false,
+          removeContainer: true,
           onclone: (doc) => {
             try {
               const win = (doc.defaultView || window) as Window
@@ -410,27 +441,31 @@ function ContenuPageCartes() {
               ]
 
               elements.forEach((el) => {
-                const cs = win.getComputedStyle(el as Element)
-                if (!cs) return
+                try {
+                  const cs = win.getComputedStyle(el as Element)
+                  if (!cs) return
 
-                for (const prop of propsToCheck) {
-                  try {
-                    const val = cs.getPropertyValue(prop)
-                    if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
-                      // override with safe fallbacks
-                      if (prop.includes('background')) {
-                        ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
-                      } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
-                        ;(el as HTMLElement).style.setProperty('color', '#121318')
-                      } else if (prop.includes('border') || prop === 'outline-color') {
-                        ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
-                      } else if (prop === 'box-shadow') {
-                        ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                  for (const prop of propsToCheck) {
+                    try {
+                      const val = cs.getPropertyValue(prop)
+                      if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
+                        // override with safe fallbacks
+                        if (prop.includes('background')) {
+                          ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
+                        } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
+                          ;(el as HTMLElement).style.setProperty('color', '#121318')
+                        } else if (prop.includes('border') || prop === 'outline-color') {
+                          ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
+                        } else if (prop === 'box-shadow') {
+                          ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                        }
                       }
+                    } catch {
+                      // ignore individual property errors
                     }
-                  } catch {
-                    // ignore inaccessible properties
                   }
+                } catch {
+                  // ignore element errors
                 }
               })
 
@@ -447,7 +482,7 @@ function ContenuPageCartes() {
                 `
                 ;(doc.head || doc.body).appendChild(style)
               } catch {
-                // ignore
+                // ignore style creation errors
               }
             } catch (e) {
               console.warn('onclone color sanitize failed', e)
@@ -492,33 +527,456 @@ function ContenuPageCartes() {
   }, [elevesClasse, classe, etablissement, templateSelectionne, afficherNotification])
 
   /**
-   * Imprime la carte
+   * Télécharge la carte en PDF pour mobile (alternative à l'impression)
+   */
+  const telechargerPdfMobile = async () => {
+    try {
+      setEnExport(true)
+      afficherNotification('info', 'Génération du PDF pour mobile...')
+
+      const html2canvas = (await import('html2canvas')).default
+      const jsPDF = (await import('jspdf')).default
+
+      // Pour mobile, générer un PDF simple avec une seule carte
+      let ref
+      let nomFichier
+
+      if (modeAffichage === 'classe') {
+        // Pour le mode classe, prendre la première carte
+        const cartesElements = cartesClasseRef.current?.querySelectorAll('.carte-eleve-container')
+        if (!cartesElements || cartesElements.length === 0) {
+          afficherNotification('erreur', 'Aucune carte à générer')
+          return
+        }
+        ref = cartesElements[0] as HTMLElement
+        nomFichier = `cartes-classe-${classe?.nom || 'classe'}-${new Date().toISOString().split('T')[0]}.pdf`
+      } else {
+        // Pour élève et personnel
+        ref = carteRef.current
+        if (!ref) {
+          afficherNotification('erreur', 'Aucune carte à générer')
+          return
+        }
+        nomFichier = modeAffichage === 'personnel' 
+          ? `carte-${membrePersonnel?.prenom || ''}-${membrePersonnel?.nom || 'personnel'}-${new Date().toISOString().split('T')[0]}.pdf`
+          : `carte-${eleve?.matricule || 'eleve'}-${new Date().toISOString().split('T')[0]}.pdf`
+      }
+
+      const canvas = await html2canvas(ref, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        allowTaint: false,
+        logging: false,
+        removeContainer: true,
+        onclone: (doc) => {
+          try {
+            const win = (doc.defaultView || window) as Window
+            const root = doc.querySelector('.carte-scolaire') || doc.body
+            const elements = root.querySelectorAll('*')
+
+            const propsToCheck = [
+              'background-color',
+              'background',
+              'color',
+              'border-color',
+              'box-shadow',
+              'outline-color',
+              'fill',
+              'stroke',
+            ]
+
+            elements.forEach((el) => {
+              try {
+                const cs = win.getComputedStyle(el as Element)
+                if (!cs) return
+
+                for (const prop of propsToCheck) {
+                  try {
+                    const val = cs.getPropertyValue(prop)
+                    if (val && (val.includes('lab(') || val.includes('lch(') || val.includes('color('))) {
+                      if (prop.includes('background')) {
+                        ;(el as HTMLElement).style.setProperty('background-color', '#ffffff')
+                      } else if (prop === 'color' || prop === 'fill' || prop === 'stroke') {
+                        ;(el as HTMLElement).style.setProperty('color', '#121318')
+                      } else if (prop.includes('border') || prop === 'outline-color') {
+                        ;(el as HTMLElement).style.setProperty('border-color', '#e5e7eb')
+                      } else if (prop === 'box-shadow') {
+                        ;(el as HTMLElement).style.setProperty('box-shadow', 'none')
+                      }
+                    }
+                  } catch {
+                    // ignore individual property errors
+                  }
+                }
+              } catch {
+                // ignore element errors
+              }
+            })
+
+            try {
+              const style = doc.createElement('style')
+              style.textContent = `
+                .carte-scolaire, .carte-scolaire * {
+                  background-color: #ffffff !important;
+                  color: #121318 !important;
+                  border-color: #e5e7eb !important;
+                  box-shadow: none !important;
+                }
+              `
+              ;(doc.head || doc.body).appendChild(style)
+            } catch {
+              // ignore style creation errors
+            }
+          } catch (e) {
+            console.warn('onclone color sanitize failed', e)
+          }
+        },
+      })
+
+      // Créer un PDF simple pour mobile
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      })
+
+      const imgData = canvas.toDataURL('image/png')
+      const imgWidth = 85.6 // Largeur carte CR80 en mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      
+      // Centrer la carte dans la page A4
+      const pageWidth = 210 // A4 width in mm
+      const x = (pageWidth - imgWidth) / 2
+      const y = 20
+
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight)
+      pdf.save(nomFichier)
+      afficherNotification('succes', 'PDF téléchargé avec succès')
+
+    } catch (erreur) {
+      console.error('Erreur génération PDF mobile:', erreur)
+      afficherNotification('erreur', 'Erreur lors de la génération du PDF')
+    } finally {
+      setEnExport(false)
+    }
+  }
+
+  /**
+   * Imprime la carte - version améliorée pour mobile et desktop
    */
   const imprimerCarte = () => {
     const ref = modeAffichage === 'classe' ? cartesClasseRef.current : carteRef.current
     if (!ref) return
 
-    const contenuOriginal = document.body.innerHTML
-    const contenuCarte = ref.outerHTML
+    // Détecter si on est sur mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    
+    console.log('Début impression - Mobile:', isMobile)
+    afficherNotification('info', 'Préparation de l\'impression...')
 
-    const styleImpression = `
-      <style>
-        @media print {
-          body { margin: 0; padding: 20px; }
-          .carte-scolaire, .carte-eleve-container { 
-            margin: 10px auto;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-            page-break-inside: avoid;
+    // Pour mobile, utiliser une approche plus directe
+    if (isMobile) {
+      try {
+        // Créer une iframe cachée pour l'impression mobile
+        const iframe = document.createElement('iframe')
+        iframe.style.position = 'absolute'
+        iframe.style.left = '-9999px'
+        iframe.style.top = '-9999px'
+        iframe.style.width = '800px'
+        iframe.style.height = '600px'
+        iframe.style.border = 'none'
+        iframe.name = 'printFrame'
+        
+        document.body.appendChild(iframe)
+        
+        // Contenu HTML pour l'impression mobile
+        const contenuHTML = `
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Impression Carte Scolaire</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              
+              body {
+                font-family: Arial, sans-serif;
+                background: white;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              
+              .print-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+                width: 100%;
+                max-width: 800px;
+              }
+              
+              .carte-scolaire, .carte-eleve-container {
+                margin: 10px auto;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+                page-break-after: always;
+              }
+              
+              @media print {
+                body { 
+                  margin: 0; 
+                  padding: 10px;
+                  background: white;
+                }
+                
+                .print-container {
+                  display: block;
+                }
+                
+                .carte-scolaire, .carte-eleve-container { 
+                  margin: 10px auto;
+                  page-break-inside: avoid;
+                  page-break-after: always;
+                }
+                
+                @page {
+                  margin: 10mm;
+                  size: A4;
+                }
+              }
+              
+              .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                color: #666;
+                font-size: 14px;
+              }
+              
+              .print-footer {
+                text-align: center;
+                margin-top: 20px;
+                color: #666;
+                font-size: 12px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="print-container">
+              <div class="print-header">
+                <strong>Cartes Scolaires - ${etablissement?.nom || 'Établissement'}</strong>
+                <br>
+                <small>Généré le ${new Date().toLocaleDateString('fr-FR')}</small>
+              </div>
+              
+              ${ref.outerHTML}
+              
+              <div class="print-footer">
+                <small>Document généré par School Card Application</small>
+              </div>
+            </div>
+            
+            <script>
+              console.log('Script de chargement iframe exécuté');
+              
+              // Pour mobile, lancer l'impression rapidement
+              setTimeout(function() {
+                console.log('Tentative d\'impression mobile...');
+                try {
+                  window.print();
+                  console.log('Commande print() exécuté');
+                } catch (error) {
+                  console.error('Erreur impression mobile:', error);
+                }
+              }, 500);
+            </script>
+          </body>
+          </html>
+        `
+
+        // Attendre que l'iframe soit chargée
+        iframe.onload = () => {
+          console.log('Iframe chargée')
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+          if (iframeDoc) {
+            iframeDoc.open()
+            iframeDoc.write(contenuHTML)
+            iframeDoc.close()
+            
+            // Lancer l'impression après un court délai
+            setTimeout(() => {
+              console.log('Lancement impression depuis iframe')
+              try {
+                iframe.contentWindow?.print()
+                afficherNotification('succes', 'Impression lancée')
+                
+                // Nettoyer l'iframe après l'impression
+                setTimeout(() => {
+                  if (document.body.contains(iframe)) {
+                    document.body.removeChild(iframe)
+                  }
+                }, 2000)
+              } catch (error) {
+                console.error('Erreur lors de l\'impression:', error)
+                afficherNotification('erreur', 'Erreur lors de l\'impression')
+              }
+            }, 1000)
           }
         }
-      </style>
-    `
 
-    document.body.innerHTML = styleImpression + contenuCarte
-    window.print()
-    document.body.innerHTML = contenuOriginal
-    window.location.reload()
+        // Timeout de sécurité
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe)
+            afficherNotification('erreur', 'Timeout - Veuillez réessayer')
+          }
+        }, 10000)
+
+      } catch (error) {
+        console.error('Erreur générale impression mobile:', error)
+        afficherNotification('erreur', 'Erreur lors de la préparation de l\'impression')
+      }
+    } else {
+      // Version desktop (existante)
+      try {
+        const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')
+        
+        if (!printWindow) {
+          afficherNotification('erreur', 'Veuillez autoriser les pop-ups pour imprimer')
+          return
+        }
+
+        const contenuHTML = `
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Impression Carte Scolaire</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              
+              body {
+                font-family: Arial, sans-serif;
+                background: white;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+              }
+              
+              .print-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                align-items: center;
+                width: 100%;
+                max-width: 800px;
+              }
+              
+              .carte-scolaire, .carte-eleve-container {
+                margin: 10px auto;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+                page-break-after: always;
+              }
+              
+              @media print {
+                body { 
+                  margin: 0; 
+                  padding: 10px;
+                  background: white;
+                }
+                
+                .print-container {
+                  display: block;
+                }
+                
+                .carte-scolaire, .carte-eleve-container { 
+                  margin: 10px auto;
+                  page-break-inside: avoid;
+                  page-break-after: always;
+                }
+                
+                @page {
+                  margin: 10mm;
+                  size: A4;
+                }
+              }
+              
+              .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                color: #666;
+                font-size: 14px;
+              }
+              
+              .print-footer {
+                text-align: center;
+                margin-top: 20px;
+                color: #666;
+                font-size: 12px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="print-container">
+              <div class="print-header">
+                <strong>Cartes Scolaires - ${etablissement?.nom || 'Établissement'}</strong>
+                <br>
+                <small>Généré le ${new Date().toLocaleDateString('fr-FR')}</small>
+              </div>
+              
+              ${ref.outerHTML}
+              
+              <div class="print-footer">
+                <small>Document généré par School Card Application</small>
+              </div>
+            </div>
+            
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 1000);
+              };
+              
+              window.onafterprint = function() {
+                setTimeout(function() {
+                  window.close();
+                }, 1000);
+              };
+            </script>
+          </body>
+          </html>
+        `
+
+        printWindow.document.write(contenuHTML)
+        printWindow.document.close()
+        printWindow.focus()
+        
+        afficherNotification('succes', 'Fenêtre d\'impression ouverte')
+        
+      } catch (error) {
+        console.error('Erreur impression desktop:', error)
+        afficherNotification('erreur', 'Erreur lors de l\'impression')
+      }
+    }
   }
 
   /**
@@ -820,15 +1278,28 @@ function ContenuPageCartes() {
               <div className="cards-action-buttons">
                 {modeAffichage === 'eleve' && (
                   <>
+                    {!isMobile && (
+                      <button
+                        type="button"
+                        className="cards-action-button primary"
+                        onClick={() => telechargerCarte(`carte-${eleve?.matricule || 'eleve'}`)}
+                        disabled={!eleve || !classe || !etablissement || enExport}
+                      >
+                        <Download />
+                        {enExport ? 'Téléchargement...' : 'Télécharger (PNG)'}
+                      </button>
+                    )}
+                    {isMobile ? (
                     <button
                       type="button"
                       className="cards-action-button primary"
-                      onClick={() => telechargerCarte(`carte-${eleve?.matricule || 'eleve'}`)}
+                      onClick={telechargerPdfMobile}
                       disabled={!eleve || !classe || !etablissement || enExport}
                     >
-                      <Download />
-                      {enExport ? 'Téléchargement...' : 'Télécharger (PNG)'}
+                      <FileText />
+                      {enExport ? 'Génération PDF...' : 'Télécharger PDF'}
                     </button>
+                  ) : (
                     <button
                       type="button"
                       className="cards-action-button secondary"
@@ -838,29 +1309,47 @@ function ContenuPageCartes() {
                       <Printer />
                       Imprimer
                     </button>
+                  )}
                   </>
                 )}
 
                 {modeAffichage === 'classe' && (
                   <>
+                    {!isMobile && (
+                      <button
+                        type="button"
+                        className="cards-action-button primary"
+                        onClick={genererPdfClasse}
+                        disabled={elevesClasse.length === 0 || enExport}
+                      >
+                        {enExport ? (
+                          <RefreshCw className="animate-spin" />
+                        ) : (
+                          <FileText />
+                        )}
+                        {enExport ? (
+                          <span className="cards-generating-indicator">Génération...</span>
+                        ) : (
+                          <>
+                            Générer PDF
+                            {elevesClasse.length > 0 && (
+                              <span className="cards-generated-badge">{elevesClasse.length}</span>
+                            )}
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {isMobile ? (
                     <button
                       type="button"
                       className="cards-action-button primary"
-                      onClick={genererPdfClasse}
+                      onClick={telechargerPdfMobile}
                       disabled={elevesClasse.length === 0 || enExport}
                     >
                       <FileText />
-                      {enExport ? (
-                        <span className="cards-generating-indicator">Génération...</span>
-                      ) : (
-                        <>
-                          Générer PDF
-                          {elevesClasse.length > 0 && (
-                            <span className="cards-generated-badge">{elevesClasse.length}</span>
-                          )}
-                        </>
-                      )}
+                      {enExport ? 'Génération PDF...' : 'Télécharger PDF'}
                     </button>
+                  ) : (
                     <button
                       type="button"
                       className="cards-action-button secondary"
@@ -870,24 +1359,38 @@ function ContenuPageCartes() {
                       <Printer />
                       Imprimer toutes les cartes
                     </button>
+                  )}
                   </>
                 )}
 
                 {modeAffichage === 'personnel' && (
                   <>
+                    {!isMobile && (
+                      <button
+                        type="button"
+                        className="cards-action-button primary"
+                        onClick={() =>
+                          telechargerCarte(
+                            `carte-${membrePersonnel?.prenom || ''}-${membrePersonnel?.nom || 'personnel'}`,
+                          )
+                        }
+                        disabled={!membrePersonnel || !etablissementPersonnel || enExport}
+                      >
+                        <Download />
+                        {enExport ? 'Téléchargement...' : 'Télécharger (PNG)'}
+                      </button>
+                    )}
+                    {isMobile ? (
                     <button
                       type="button"
                       className="cards-action-button primary"
-                      onClick={() =>
-                        telechargerCarte(
-                          `carte-${membrePersonnel?.prenom || ''}-${membrePersonnel?.nom || 'personnel'}`,
-                        )
-                      }
+                      onClick={telechargerPdfMobile}
                       disabled={!membrePersonnel || !etablissementPersonnel || enExport}
                     >
-                      <Download />
-                      {enExport ? 'Téléchargement...' : 'Télécharger (PNG)'}
+                      <FileText />
+                      {enExport ? 'Génération PDF...' : 'Télécharger PDF'}
                     </button>
+                  ) : (
                     <button
                       type="button"
                       className="cards-action-button secondary"
@@ -897,6 +1400,7 @@ function ContenuPageCartes() {
                       <Printer />
                       Imprimer
                     </button>
+                  )}
                   </>
                 )}
               </div>

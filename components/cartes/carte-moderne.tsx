@@ -167,6 +167,8 @@ export function CarteModerneRectoVerso({
         <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
           {/* Photo avec cadre */}
           <div 
+            role="img"
+            aria-label={`Photo de ${eleve.prenom ?? ''} ${eleve.nom ?? ''}`}
             style={{
               width: '75px',
               height: '95px',
@@ -178,7 +180,7 @@ export function CarteModerneRectoVerso({
           >
             <Image
               src={eleve.photo || '/placeholder.svg?height=89&width=69'}
-              alt={`Photo de ${eleve.prenom} ${eleve.nom}`}
+              alt={`Photo de ${eleve.prenom ?? ''} ${eleve.nom ?? ''}`}
               width={69}
               height={89}
               style={{
@@ -190,36 +192,69 @@ export function CarteModerneRectoVerso({
 
           {/* Informations */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {/* Nom sur une ligne séparée */}
             <div 
               style={{ 
-                fontSize: '16px', 
+                fontSize: '14px', 
                 fontWeight: 'bold',
-                marginBottom: '8px',
+                marginBottom: '2px',
                 textShadow: '0 1px 2px rgba(0,0,0,0.1)',
               }}
             >
-              {`${eleve.prenom ?? ''} ${eleve.nom ?? ''}`.trim()}
+              {eleve.nom ?? 'Nom'}
+            </div>
+            
+            {/* Prénom sur une ligne séparée */}
+            <div 
+              style={{ 
+                fontSize: '12px', 
+                fontWeight: '600',
+                marginBottom: '6px',
+                textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+              }}
+            >
+              {eleve.prenom ?? 'Prénom'}
             </div>
 
-            <div style={{ fontSize: '11px', opacity: 0.9, lineHeight: '1.8' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <span style={{ opacity: 0.7 }}>Matricule</span>
-                <span style={{ fontWeight: '600' }}>{eleve.matricule}</span>
+            <div style={{ fontSize: '9px', opacity: 0.9, lineHeight: '1.6' }}>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                <span style={{ opacity: 0.7, minWidth: '45px' }}>Matricule</span>
+                <span style={{ fontWeight: '600' }}>{eleve.matricule || '—'}</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <span style={{ opacity: 0.7 }}>Classe</span>
-                <span style={{ fontWeight: '600' }}>{classe.nom} - {classe.niveau}</span>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                <span style={{ opacity: 0.7, minWidth: '45px' }}>Classe</span>
+                <span style={{ fontWeight: '600' }}>{classe.nom || '—'}{classe.niveau ? ` - ${classe.niveau}` : ''}</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <span style={{ opacity: 0.7 }}>Né(e) le</span>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                <span style={{ opacity: 0.7, minWidth: '45px' }}>Né(e)</span>
                 <span>{formaterDate(dateNaissanceRaw)}</span>
               </div>
+              {lieuNaissanceRaw && (
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                  <span style={{ opacity: 0.7, minWidth: '45px' }}>Lieu</span>
+                  <span>{lieuNaissanceRaw}</span>
+                </div>
+              )}
+              {eleve.sexe && (
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '2px' }}>
+                  <span style={{ opacity: 0.7, minWidth: '45px' }}>Sexe</span>
+                  <span>{eleve.sexe === 'M' ? 'Masculin' : eleve.sexe === 'F' ? 'Féminin' : eleve.sexe}</span>
+                </div>
+              )}
+              {nationaliteRaw && (
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span style={{ opacity: 0.7, minWidth: '45px' }}>Nationalité</span>
+                  <span>{nationaliteRaw}</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* QR Code */}
           {avecQrCode && qrCodeUrl && (
             <div 
+              role="img"
+              aria-label="QR Code de vérification"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -237,7 +272,7 @@ export function CarteModerneRectoVerso({
               >
                 <Image
                   src={qrCodeUrl}
-                  alt="QR Code"
+                  alt="QR Code de vérification de l'authenticité de la carte"
                   width={55}
                   height={55}
                 />
@@ -352,6 +387,65 @@ export function CarteModerneRectoVerso({
             <div>• En cas de perte, signaler immédiatement au secrétariat</div>
             <div>• Conserver cette carte en bon état</div>
             <div>• Valable pour l'année scolaire {etablissement.anneeScolaire}</div>
+          </div>
+        </div>
+
+        {/* Section informations personnelles */}
+        <div style={{ marginBottom: '16px' }}>
+          <div
+            style={{
+              fontSize: '10px',
+              fontWeight: 'bold',
+              color: etablissement.couleur,
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <div
+              style={{
+                width: '4px',
+                height: '4px',
+                backgroundColor: etablissement.couleur,
+                borderRadius: '50%',
+              }}
+            />
+            INFORMATIONS PERSONNELLES
+          </div>
+          <div style={{ fontSize: '9px', color: '#475569', marginLeft: '10px', lineHeight: '1.5' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
+              <span style={{ minWidth: '50px', color: '#64748b' }}>Nom :</span>
+              <span>{eleve.nom || 'Non renseigné'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
+              <span style={{ minWidth: '50px', color: '#64748b' }}>Prénom :</span>
+              <span>{eleve.prenom || 'Non renseigné'}</span>
+            </div>
+            {dateNaissanceRaw && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
+                <span style={{ minWidth: '50px', color: '#64748b' }}>Né(e) le :</span>
+                <span>{formaterDate(dateNaissanceRaw)}</span>
+              </div>
+            )}
+            {lieuNaissanceRaw && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
+                <span style={{ minWidth: '50px', color: '#64748b' }}>Lieu :</span>
+                <span>{lieuNaissanceRaw}</span>
+              </div>
+            )}
+            {eleve.sexe && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '2px' }}>
+                <span style={{ minWidth: '50px', color: '#64748b' }}>Sexe :</span>
+                <span>{eleve.sexe === 'M' ? 'Masculin' : eleve.sexe === 'F' ? 'Féminin' : eleve.sexe}</span>
+              </div>
+            )}
+            {nationaliteRaw && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <span style={{ minWidth: '50px', color: '#64748b' }}>Nationalité :</span>
+                <span>{nationaliteRaw}</span>
+              </div>
+            )}
           </div>
         </div>
 
