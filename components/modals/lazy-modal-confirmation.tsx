@@ -20,7 +20,7 @@ interface ModalConfirmationProps {
   onFermer: () => void
   onConfirmer: () => void
   titre: string
-  description?: string
+  description: string
   confirmText?: string
   cancelText?: string
   enChargement?: boolean
@@ -79,9 +79,22 @@ function ModalLoader() {
 export function LazyModalConfirmation(props: ModalConfirmationProps) {
   if (!props.ouvert) return null
 
+  // Mapper les props vers le format attendu par ModalConfirmation
+  const mappedProps = {
+    ouvert: props.ouvert,
+    onFermer: props.onFermer,
+    onConfirmer: props.onConfirmer,
+    titre: props.titre,
+    description: props.description,
+    texteConfirmation: props.confirmText || 'Confirmer',
+    texteAnnulation: props.cancelText || 'Annuler',
+    enChargement: props.enChargement || false,
+    variante: props.variant === 'danger' ? 'destructive' as const : 'default' as const
+  }
+
   return (
     <Suspense fallback={<ModalLoader />}>
-      <ModalConfirmationLazy {...props} />
+      <ModalConfirmationLazy {...mappedProps} />
     </Suspense>
   )
 }
