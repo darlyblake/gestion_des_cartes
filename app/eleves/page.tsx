@@ -19,8 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChargementPage } from '@/components/chargement'
-import { ModalSimple } from '@/components/modal-simple'
+import { LazyModalSimple } from '@/components/modals'
 import { SkeletonList } from '@/components/skeleton-loader'
+import { ListePaginee } from '@/components/liste-virtualisee'
 // ModalConfirmation remplacé par une modal inline pour un contrôle visuel direct
 import { useNotification } from '@/components/notification'
 import { 
@@ -343,8 +344,10 @@ export default function PageEleves() {
             )}
           </div>
         ) : (
-          <div className="students-grid">
-            {elevesFiltres.map((eleve, idx) => (
+          <ListePaginee
+            items={elevesFiltres}
+            itemsPerPage={20}
+            renderItem={(eleve, idx) => (
               <div
                 key={eleve.id || eleve.matricule || `${eleve.prenom}-${eleve.nom}-${idx}`}
                 className="student-card"
@@ -431,12 +434,13 @@ export default function PageEleves() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+            className="students-grid"
+          />
         )}
       </div>
 
-      <ModalSimple
+      <LazyModalSimple
         ouvert={!!eleveASupprimer}
         onFermer={() => setEleveASupprimer(null)}
         onConfirmer={gererSuppression}

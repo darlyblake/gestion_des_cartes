@@ -11,8 +11,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useDebounce } from 'use-debounce'
 import { ChargementPage } from '@/components/chargement'
-import { ModalSimple } from '@/components/modal-simple'
+import { LazyModalSimple } from '@/components/modals'
 import { SkeletonList } from '@/components/skeleton-loader'
+import { ListePaginee } from '@/components/liste-virtualisee'
 import { useNotification } from '@/components/notification'
 import { 
   Plus, 
@@ -238,8 +239,10 @@ export default function PagePersonnel() {
             )}
           </div>
         ) : (
-          <div className="personnel-grid">
-            {personnelFiltre.map((membre, index) => {
+          <ListePaginee
+            items={personnelFiltre}
+            itemsPerPage={20}
+            renderItem={(membre, index) => {
               const membreId = membre.id ?? membre._id?.toString() ?? `${membre.nom}-${index}`
               return (
                 <div key={membreId} className="personnel-member-card">
@@ -301,12 +304,13 @@ export default function PagePersonnel() {
                   </div>
                 </div>
               )
-            })}
-          </div>
+            }}
+            className="personnel-grid"
+          />
         )}
 
         {/* Modal de confirmation centralisée pour suppression de membre */}
-        <ModalSimple
+        <LazyModalSimple
           ouvert={!!membreASupprimer}
           onFermer={() => setMembreASupprimer(null)}
           onConfirmer={async () => {

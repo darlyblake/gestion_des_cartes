@@ -143,6 +143,8 @@ function CarteRecto({
       >
         {/* Photo */}
         <div 
+          role="img"
+          aria-label={`Photo de ${eleve.prenom ?? ''} ${eleve.nom ?? ''}`}
           style={{
             width: '70px',
             height: '90px',
@@ -172,16 +174,18 @@ function CarteRecto({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div 
             style={{ 
-              fontSize: '14px', 
+              fontSize: '12px', 
               fontWeight: 'bold',
               color: couleur,
-              marginBottom: '3px',
+              marginBottom: '2px',
+              lineHeight: '1.2',
             }}
           >
-            {`${eleve.prenom ?? ''} ${eleve.nom ?? ''}`.trim() || 'Élève'}
+            <div>{eleve.nom ?? 'Nom'}</div>
+            <div>{eleve.prenom ?? 'Prénom'}</div>
           </div>
 
-          <div style={{ fontSize: '9px', color: '#4b5563', lineHeight: '1.4' }}>
+          <div style={{ fontSize: '8px', color: '#4b5563', lineHeight: '1.3' }}>
             <div>
               <span style={{ color: '#9ca3af' }}>Matricule: </span>
               <span style={{ fontWeight: '600' }}>{eleve.matricule ?? '-'}</span>
@@ -200,7 +204,7 @@ function CarteRecto({
             </div>
             <div>
               <span style={{ color: '#9ca3af' }}>Sexe: </span>
-              <span>{eleve.sexe === 'M' ? 'Masculin' : 'Féminin'}</span>
+              <span>{eleve.sexe === 'M' ? 'M' : 'F'}</span>
             </div>
             <div>
               <span style={{ color: '#9ca3af' }}>Nationalité: </span>
@@ -212,6 +216,8 @@ function CarteRecto({
         {/* QR Code */}
         {avecQrCode && (
           <div 
+            role="img"
+            aria-label="QR Code de vérification"
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -221,7 +227,7 @@ function CarteRecto({
           >
             <Image
               src={qrCodeUrl || "/placeholder.svg"}
-              alt="QR Code"
+              alt="QR Code de vérification de l'authenticité de la carte"
               width={60}
               height={60}
             />
